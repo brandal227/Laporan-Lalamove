@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #f37021; /* Warna khas Lalamove / Aksen Hangat */
+            --primary: #f37021;
             --primary-hover: #d95e14;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
@@ -36,25 +36,49 @@
             box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
         }
 
+        /* Navigasi Atas yang Lebih Rapinya Terstruktur */
         .top-nav {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-nav {
             background-color: #00b14f;
             color: white;
             text-decoration: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             font-size: 12px;
             font-weight: 600;
             border-radius: 6px;
             transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .btn-nav:hover {
             background-color: #009541;
+        }
+
+        .btn-json {
+            background-color: #3182ce;
+        }
+        .btn-json:hover {
+            background-color: #2b6cb0;
         }
 
         h1.main-title {
@@ -73,8 +97,10 @@
             align-items: center;
             margin-bottom: 12px;
             background: #f1f5f9;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .filter-bar {
@@ -83,7 +109,7 @@
         }
 
         .filter-bar select, .filter-bar input, table select {
-            padding: 5px 10px;
+            padding: 6px 10px;
             font-size: 13px;
             font-family: 'Inter', sans-serif;
             border: 1px solid var(--border-color);
@@ -107,7 +133,7 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 14px;
             font-size: 13px;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
@@ -215,9 +241,16 @@
 <body>
 
     <div class="container">
-        <!-- Tombol Akses Langsung ke File 2 -->
+        <!-- Tombol Navigasi & Backup/Restore JSON yang Dikelompokkan Rapi -->
         <div class="top-nav">
-            <a href="dashboard.html" class="btn-nav">📊 Buka Laporan Ringkasan (File 2)</a>
+            <div class="nav-group">
+                <button class="btn-nav btn-json" onclick="downloadJSON()">📥 Download JSON</button>
+                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
+                <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
+            </div>
+            <div class="nav-group">
+                <a href="dashboard.html" class="btn-nav">📊 Buka Laporan Ringkasan</a>
+            </div>
         </div>
 
         <h1 class="main-title" id="mainTitle">Master data Laporan Lalamove</h1>
@@ -310,7 +343,6 @@
         function insertRowToDOM(tanggal = "", deskripsi = "", pemasukan = "", potongan = "") {
             const newRow = table.insertRow();
             
-            // Pilihan opsi untuk dropdown deskripsi
             const optionsList = ["Argo kotor", "Potongan aplikasi", "Bbm", "Bonus stiker"];
             let optionsHtml = `<option value="" disabled ${!deskripsi ? 'selected' : ''}>Pilih Deskripsi</option>`;
             
@@ -365,11 +397,10 @@
             saveTableData();
         }
 
-        // Fungsi Format Rupiah Real-time saat mengetik dan deteksi perubahan select
         document.getElementById('laporanTable').addEventListener('input', function(e) {
             if (e.target.classList.contains('currency-input')) {
                 let el = e.target;
-                let value = el.innerText.replace(/[^0-9]/g, ''); // Ambil angka saja
+                let value = el.innerText.replace(/[^0-9]/g, '');
                 
                 if (value === "") {
                     el.innerText = "";
@@ -377,7 +408,6 @@
                     let formatted = Number(value).toLocaleString('id-ID');
                     el.innerText = "Rp " + formatted;
                     
-                    // Kembalikan kursor ke posisi akhir teks
                     let range = document.createRange();
                     let sel = window.getSelection();
                     range.selectNodeContents(el);
@@ -417,8 +447,49 @@
             }, 1500);
         }
 
+        function downloadJSON() {
+            const exportData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('laporan_lalamove_') || key.startsWith('lalamove_bonus_')) {
+                    exportData[key] = localStorage.getItem(key);
+                }
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_lalamove_${selectBulan.value}_${inputTahun.value}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function uploadJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    for (const key in importedData) {
+                        if (importedData.hasOwnProperty(key)) {
+                            localStorage.setItem(key, importedData[key]);
+                        }
+                    }
+                    alert("Data JSON berhasil di-upload dan dipulihkan!");
+                    loadTableData();
+                } catch (error) {
+                    alert("Format file JSON tidak valid!");
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
         window.onload = loadTableData;
     </script>
-
 </body>
 </html>
