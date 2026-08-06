@@ -360,122 +360,127 @@
 </head>
 <body>
 
-<div class="container" id="capture-area">
-    <!-- Header -->
-    <div class="header">
-        <div>
-            <h1>Laporan Pendapatan Lalamove</h1>
-            <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
-        </div>
-        <div class="controls-group">
+<!-- PEMBUNGKUS UTAMA UNTUK MENANGKAP SELURUH HALAMAN -->
+<div id="full-capture-wrapper">
+
+    <div class="container" id="capture-area">
+        <!-- Header -->
+        <div class="header">
             <div>
-                <label for="monthPicker" style="font-size: 12px; display: block; margin-bottom: 3px;">Ubah Bulan & Tahun:</label>
-                <input type="month" id="monthPicker" class="month-selector" value="2026-06">
+                <h1>Laporan Pendapatan Lalamove</h1>
+                <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
             </div>
-            <button id="btnSavePng" class="btn-save" title="Simpan laporan ke format PNG">Simpan ke PNG</button>
-            <button id="btnReset" class="btn-reset" title="Reset data bulan ini">Reset Bulan Ini</button>
+            <div class="controls-group">
+                <div>
+                    <label for="monthPicker" style="font-size: 12px; display: block; margin-bottom: 3px;">Ubah Bulan & Tahun:</label>
+                    <input type="month" id="monthPicker" class="month-selector" value="2026-06">
+                </div>
+                <button id="btnSavePng" class="btn-save" title="Simpan laporan ke format PNG">Simpan ke PNG</button>
+                <button id="btnReset" class="btn-reset" title="Reset data bulan ini">Reset Bulan Ini</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card green">
+                <div class="card-title">Total Pemasukan</div>
+                <div class="card-value" id="val-pemasukan">Rp 0</div>
+            </div>
+            <div class="card red">
+                <div class="card-title">Total Pengeluaran</div>
+                <div class="card-value" id="val-pengeluaran">Rp 0</div>
+            </div>
+            <div class="card blue">
+                <div class="card-title">Penghasilan Bersih</div>
+                <div class="card-value" id="val-bersih">Rp 0</div>
+            </div>
+            <div class="card orange">
+                <div class="card-title">Total Order/Trip</div>
+                <div class="card-value" id="val-trip">0 Order</div>
+                <div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal</div>
+        <div class="table-container">
+            <table id="report-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th class="text-center">Trip</th>
+                        <th class="text-right">Argo kotor</th>
+                        <th class="text-right">Potongan aplikasi</th>
+                        <th class="text-right">Penghasilan Bersih</th>
+                        <th class="text-right">Persentase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Baris tabel harian -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Category Cards Bottom -->
+        <div class="section-title">Rincian Kategori</div>
+        <div class="category-cards">
+            <div class="cat-card">
+                <div class="cat-title">Argo Aplikasi + Tip</div>
+                <div class="cat-value" id="cat-argo">Rp 0</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">Bonus Stiker</div>
+                <div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">Potongan Aplikasi</div>
+                <div class="cat-value" id="cat-potongan">Rp 0</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">BBM</div>
+                <div class="cat-value" id="cat-bbm" contenteditable="true" inputmode="numeric">Rp 0</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer" id="footer-text">
+            Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
         </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="summary-cards">
-        <div class="card green">
-            <div class="card-title">Total Pemasukan</div>
-            <div class="card-value" id="val-pemasukan">Rp 0</div>
+    <!-- CONTAINER LAPORAN TAHUNAN -->
+    <div class="container" id="capture-area-yearly">
+        <div class="header" style="background-color: #2b6cb0;">
+            <div>
+                <h1>Laporan Tahunan Pendapatan Lalamove</h1>
+                <p id="header-periode-yearly">Rekapitulasi Tahun: 2026</p>
+            </div>
         </div>
-        <div class="card red">
-            <div class="card-title">Total Pengeluaran</div>
-            <div class="card-value" id="val-pengeluaran">Rp 0</div>
+
+        <div class="section-title">Rekapitulasi Per Bulan</div>
+        <div class="table-container" style="margin-bottom: 20px;">
+            <table id="yearly-table">
+                <thead>
+                    <tr>
+                        <th>Bulan</th>
+                        <th class="text-center">Total Trip</th>
+                        <th class="text-right">Total Pemasukan</th>
+                        <th class="text-right">Potongan Aplikasi</th>
+                        <th class="text-right">Pengeluaran BBM</th>
+                        <th class="text-right">Penghasilan Bersih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+            </table>
         </div>
-        <div class="card blue">
-            <div class="card-title">Penghasilan Bersih</div>
-            <div class="card-value" id="val-bersih">Rp 0</div>
-        </div>
-        <div class="card orange">
-            <div class="card-title">Total Order/Trip</div>
-            <div class="card-value" id="val-trip">0 Order</div>
-            <div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div>
+
+        <div class="footer" id="footer-text-yearly">
+            Laporan Akumulasi Tahunan • 2026
         </div>
     </div>
 
-    <!-- Table Section -->
-    <div class="section-title">Ringkasan Aktivitas Harian Pertanggal</div>
-    <div class="table-container">
-        <table id="report-table">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th class="text-center">Trip</th>
-                    <th class="text-right">Argo kotor</th>
-                    <th class="text-right">Potongan aplikasi</th>
-                    <th class="text-right">Penghasilan Bersih</th>
-                    <th class="text-right">Persentase</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Baris tabel harian -->
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Category Cards Bottom -->
-    <div class="section-title">Rincian Kategori</div>
-    <div class="category-cards">
-        <div class="cat-card">
-            <div class="cat-title">Argo Aplikasi + Tip</div>
-            <div class="cat-value" id="cat-argo">Rp 0</div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-title">Bonus Stiker</div>
-            <div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-title">Potongan Aplikasi</div>
-            <div class="cat-value" id="cat-potongan">Rp 0</div>
-        </div>
-        <div class="cat-card">
-            <div class="cat-title">BBM</div>
-            <div class="cat-value" id="cat-bbm" contenteditable="true" inputmode="numeric">Rp 0</div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer" id="footer-text">
-        Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
-    </div>
-</div>
-
-<!-- CONTAINER LAPORAN TAHUNAN -->
-<div class="container" id="capture-area-yearly">
-    <div class="header" style="background-color: #2b6cb0;">
-        <div>
-            <h1>Laporan Tahunan Pendapatan Lalamove</h1>
-            <p id="header-periode-yearly">Rekapitulasi Tahun: 2026</p>
-        </div>
-    </div>
-
-    <div class="section-title">Rekapitulasi Per Bulan</div>
-    <div class="table-container" style="margin-bottom: 20px;">
-        <table id="yearly-table">
-            <thead>
-                <tr>
-                    <th>Bulan</th>
-                    <th class="text-center">Total Trip</th>
-                    <th class="text-right">Total Pemasukan</th>
-                    <th class="text-right">Potongan Aplikasi</th>
-                    <th class="text-right">Pengeluaran BBM</th>
-                    <th class="text-right">Penghasilan Bersih</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Diisi otomatis oleh JavaScript -->
-            </tbody>
-        </table>
-    </div>
-
-    <div class="footer" id="footer-text-yearly">
-        Laporan Akumulasi Tahunan • 2026
-    </div>
 </div>
 
 <script>
@@ -849,8 +854,9 @@
 
     document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
 
+    // Diperbarui: Mengarahkan html2canvas ke elemen pembungkus seluruh halaman
     document.getElementById('btnSavePng').addEventListener('click', function() {
-        const captureElement = document.getElementById('capture-area');
+        const captureElement = document.getElementById('full-capture-wrapper');
         
         html2canvas(captureElement, {
             scale: 2, 
@@ -861,7 +867,7 @@
             
             const link = document.createElement('a');
             link.href = imageURL;
-            link.download = `Laporan-Lalamove-${pickerValue}.png`;
+            link.download = `Laporan-Lalamove-Full-${pickerValue}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
