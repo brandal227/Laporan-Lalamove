@@ -31,7 +31,7 @@
             margin-bottom: 20px;
         }
 
-        /* Header */
+        /* Header yang Lebih Rapinya Terstruktur */
         .header {
             background-color: #00b14f;
             color: white;
@@ -40,12 +40,18 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .header h1 {
             font-size: 22px;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
 
         .header p {
@@ -53,29 +59,56 @@
             opacity: 0.9;
         }
 
+        .nav-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
         .btn-nav-file1 {
             background-color: #f37021;
             color: white;
             text-decoration: none;
-            padding: 8px 12px;
+            padding: 7px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             transition: background 0.2s;
-            margin-bottom: 8px;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-nav-file1:hover {
             background-color: #d95e14;
         }
 
-        /* Month Selector & Controls Styling */
+        .btn-json {
+            background-color: #3182ce;
+        }
+        .btn-json:hover {
+            background-color: #2b6cb0;
+        }
+
+        /* Kelompok Kontrol Kanan (Bulan, Simpan PNG, Reset) */
         .controls-group {
             display: flex;
             gap: 10px;
             align-items: flex-end;
             flex-wrap: wrap;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .control-item label {
+            font-size: 11px;
+            font-weight: bold;
+            opacity: 0.9;
         }
 
         .month-selector {
@@ -87,6 +120,7 @@
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
+            outline: none;
         }
 
         .month-selector::-webkit-calendar-picker-indicator {
@@ -94,9 +128,7 @@
             cursor: pointer;
         }
 
-        .btn-reset {
-            background-color: #e53e3e;
-            color: white;
+        .btn-action-control {
             border: none;
             padding: 9px 12px;
             border-radius: 6px;
@@ -104,6 +136,12 @@
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
+            height: 35px;
+        }
+
+        .btn-reset {
+            background-color: #e53e3e;
+            color: white;
         }
 
         .btn-reset:hover {
@@ -113,13 +151,6 @@
         .btn-save {
             background-color: #3182ce;
             color: white;
-            border: none;
-            padding: 9px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
         }
 
         .btn-save:hover {
@@ -358,19 +389,25 @@
     <div class="container" id="capture-area">
         <!-- Header -->
         <div class="header">
-            <div>
-                <!-- Tombol Navigasi ke File 1 -->
-                <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
+            <div class="header-left">
+                <!-- Navigasi & Backup/Restore JSON yang Lebih Rapi -->
+                <div class="nav-group">
+                    <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
+                    <button class="btn-nav-file1 btn-json" onclick="downloadJSON()">📥 Download JSON</button>
+                    <button class="btn-nav-file1 btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
+                    <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
+                </div>
                 <h1>Laporan Pendapatan Lalamove</h1>
                 <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
             </div>
+            
             <div class="controls-group">
-                <div>
-                    <label for="monthPicker" style="font-size: 12px; display: block; margin-bottom: 3px;">Ubah Bulan & Tahun:</label>
+                <div class="control-item">
+                    <label for="monthPicker">Ubah Bulan & Tahun:</label>
                     <input type="month" id="monthPicker" class="month-selector" value="2026-06">
                 </div>
-                <button id="btnSavePng" class="btn-save" title="Simpan laporan ke format PNG">Simpan ke PNG</button>
-                <button id="btnReset" class="btn-reset" title="Reset data bulan ini">Reset Bulan Ini</button>
+                <button id="btnSavePng" class="btn-action-control btn-save" title="Simpan laporan ke format PNG">Simpan PNG</button>
+                <button id="btnReset" class="btn-action-control btn-reset" title="Reset data bulan ini">Reset</button>
             </div>
         </div>
 
@@ -842,6 +879,49 @@
             handleMonthChange();
         }
     });
+
+    function downloadJSON() {
+        const exportData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('laporan_lalamove_') || key.startsWith('lalamove_bonus_')) {
+                exportData[key] = localStorage.getItem(key);
+            }
+        }
+
+        const pickerValue = document.getElementById('monthPicker').value;
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `backup_lalamove_${pickerValue}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function uploadJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                for (const key in importedData) {
+                    if (importedData.hasOwnProperty(key)) {
+                        localStorage.setItem(key, importedData[key]);
+                    }
+                }
+                alert("Data JSON berhasil di-upload dan dipulihkan!");
+                handleMonthChange();
+            } catch (error) {
+                alert("Format file JSON tidak valid!");
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+    }
 
     window.onload = function() {
         handleMonthChange();
