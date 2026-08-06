@@ -3,894 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pendapatan Lalamove</title>
-    <!-- Memuat html2canvas melalui CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Laporan Lalamove Dinamis</title>
+    <!-- Google Fonts Inter untuk kesan modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+        :root {
+            --primary: #f37021; /* Warna khas Lalamove / Aksen Hangat */
+            --primary-hover: #d95e14;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
         }
 
         body {
-            background-color: #f4f6f9;
-            padding: 20px;
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 15px 10px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
         }
 
         .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
+            max-width: 800px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
         }
 
-        /* Header */
-        .header {
+        .top-nav {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .btn-nav {
             background-color: #00b14f;
             color: white;
-            padding: 20px;
+            text-decoration: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .btn-nav:hover {
+            background-color: #009541;
+        }
+
+        h1.main-title {
+            text-align: center;
+            color: var(--text-main);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        /* Kontainer gabungan untuk filter dan tombol aksi */
+        .controls-wrapper {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .header h1 {
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        /* Month Selector & Controls Styling */
-        .controls-group {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .month-selector {
-            background: rgba(255, 255, 255, 0.2);
+            margin-bottom: 12px;
+            background: #f1f5f9;
             padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
+            border-radius: 8px;
         }
 
-        .month-selector::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-
-        .btn-reset {
-            background-color: #e53e3e;
-            color: white;
-            border: none;
-            padding: 9px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-reset:hover {
-            background-color: #c53030;
-        }
-
-        /* Tombol Save to PNG */
-        .btn-save {
-            background-color: #3182ce;
-            color: white;
-            border: none;
-            padding: 9px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-save:hover {
-            background-color: #2b6cb0;
-        }
-
-        /* Summary Cards Top (Diperkecil) */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+        .filter-bar {
+            display: flex;
             gap: 8px;
-            padding: 12px 20px;
-            background-color: #fdfdfd;
         }
 
-        .card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px 10px;
-            border-left-width: 3px;
-        }
-
-        .card.green { border-left-color: #00b14f; }
-        .card.red { border-left-color: #e53e3e; }
-        .card.blue { border-left-color: #3182ce; }
-        .card.orange { border-left-color: #dd6b20; }
-
-        .card-title {
-            font-size: 9px;
-            color: #718096;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .card-value {
+        .filter-bar select, .filter-bar input, table select {
+            padding: 5px 10px;
             font-size: 13px;
-            font-weight: bold;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
         }
 
-        .card.green .card-value { color: #00b14f; }
-        .card.red .card-value { color: #e53e3e; }
-        .card.blue .card-value { color: #3182ce; }
-        .card.orange .card-value { color: #dd6b20; }
-
-        .card-subvalue {
-            font-size: 10px;
-            color: #718096;
-            margin-top: 2px;
-            font-weight: normal;
+        .filter-bar select:focus, .filter-bar input:focus, table select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(243, 112, 33, 0.15);
         }
 
-        /* Section Titles */
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            padding: 0 20px;
-            margin: 15px 0 10px 0;
-            color: #2d3748;
+        .action-bar {
+            display: flex;
         }
 
-        /* Table */
-        .table-container {
-            padding: 0 20px;
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px -1px rgba(243, 112, 33, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(243, 112, 33, 0.3);
+        }
+
+        .btn-delete {
+            background-color: #fee2e2;
+            color: var(--danger);
+            padding: 4px 8px;
+            font-size: 11px;
+            box-shadow: none;
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .table-responsive {
             overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            background-color: #ffffff;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            font-size: 13px;
         }
 
         th {
-            background-color: #f7fafc;
-            color: #4a5568;
-            text-align: left;
-            padding: 10px 4px; 
-            border-bottom: 2px solid #e2e8f0;
-            font-weight: bold;
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
         td {
-            padding: 8px 4px; 
-            border-bottom: 1px solid #edf2f7;
-            color: #2d3748;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
         }
 
-        tr:hover {
-            background-color: #f8fafc;
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
-        tr.row-zero {
-            background-color: #ffe6e6 !important;
+        tbody tr:hover {
+            background-color: #fcfcfc;
         }
 
-        tr.row-zero td {
-            color: #e29999 !important;
-        }
-
-        /* Styling untuk Baris Total/Jumlah Tahunan */
-        tr.row-total {
-            background-color: #edf2f7 !important;
-            font-weight: bold;
-        }
-
-        tr.row-total td {
-            border-top: 2px solid #cbd5e0;
-            border-bottom: 2px solid #cbd5e0;
-            color: #1a202c;
-        }
-
-        .text-right {
+        td.text-right, th.text-right {
             text-align: right;
         }
 
-        .text-center {
+        td.text-center, th.text-center {
             text-align: center;
         }
 
-        .text-green {
-            color: #00b14f;
-            font-weight: 500;
+        td[contenteditable="true"] {
+            transition: background-color 0.15s ease;
         }
 
-        .text-red {
-            color: #e53e3e;
-            font-weight: 500;
+        td[contenteditable="true"]:hover {
+            background-color: #fffbeb;
         }
 
-        /* Progress Bar in Table */
-        .progress-cell {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-        }
-
-        .percentage {
-            font-size: 11px;
-            color: #3182ce;
-            min-width: 32px;
-            text-align: left;
-        }
-
-        .progress-bar-bg {
-            width: 70px;
-            background-color: #e2e8f0;
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            background-color: #3182ce;
-            height: 100%;
-            border-radius: 3px;
-        }
-
-        /* Progress Bar di Kolom Penghasilan Bersih Tahunan */
-        .yearly-net-cell {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 3px;
-        }
-
-        .yearly-net-text {
-            font-weight: 500;
-        }
-
-        .yearly-progress-container {
-            width: 100%;
-            max-width: 120px;
-            background-color: #e2e8f0;
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .yearly-progress-fill {
-            background-color: #00b14f;
-            height: 100%;
-            border-radius: 3px;
-        }
-
-        /* Bottom Category Cards */
-        .category-cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            padding: 12px 20px;
-        }
-
-        .cat-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px 10px;
-            text-align: center;
-        }
-
-        .cat-title {
-            font-size: 9px;
-            color: #718096;
-            margin-bottom: 4px;
-        }
-
-        .cat-value {
-            font-size: 12px;
-            font-weight: bold;
-            color: #00b14f;
-        }
-
-        .cat-card:nth-child(3) .cat-value,
-        .cat-card:nth-child(4) .cat-value {
-            color: #e53e3e;
-        }
-
-        .cat-value[contenteditable="true"] {
-            outline: 1px dashed #cbd5e0;
-            padding: 2px 4px;
+        td[contenteditable="true"]:focus {
+            background-color: #fffbeb;
+            outline: 2px solid var(--primary);
             border-radius: 4px;
-            cursor: text;
         }
 
-        .cat-value[contenteditable="true"]:focus {
-            outline: 2px solid #3182ce;
-            background: #f7fafc;
-        }
-
-        /* Footer */
-        .footer {
+        #notification {
             text-align: center;
-            font-size: 11px;
-            color: #a0aec0;
-            padding: 15px;
-            border-top: 1px solid #edf2f7;
-            background-color: #fafbfc;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .summary-cards, .category-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #10b981;
+            height: 12px;
+            transition: opacity 0.3s ease;
         }
     </style>
 </head>
 <body>
 
-<!-- PEMBUNGKUS UTAMA UNTUK MENANGKAP SELURUH HALAMAN -->
-<div id="full-capture-wrapper">
+    <div class="container">
+        <!-- Tombol Akses Langsung ke File 2 -->
+        <div class="top-nav">
+            <a href="dashboard.html" class="btn-nav">📊 Buka Laporan Ringkasan (File 2)</a>
+        </div>
 
-    <div class="container" id="capture-area">
-        <!-- Header -->
-        <div class="header">
-            <div>
-                <h1>Laporan Pendapatan Lalamove</h1>
-                <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
+        <h1 class="main-title" id="mainTitle">Master data Laporan Lalamove</h1>
+        
+        <!-- Wrapper untuk Filter Bulan/Tahun di Kiri dan Tombol Tambah Baris di Kanan -->
+        <div class="controls-wrapper">
+            <div class="filter-bar">
+                <select id="selectBulan" onchange="changePeriod()">
+                    <option value="Januari">Januari</option>
+                    <option value="Februari">Februari</option>
+                    <option value="Maret">Maret</option>
+                    <option value="April">April</option>
+                    <option value="Mei">Mei</option>
+                    <option value="Juni">Juni</option>
+                    <option value="Juli">Juli</option>
+                    <option value="Agustus">Agustus</option>
+                    <option value="September">September</option>
+                    <option value="Oktober">Oktober</option>
+                    <option value="November">November</option>
+                    <option value="Desember">Desember</option>
+                </select>
+                <input type="number" id="inputTahun" value="2026" style="width: 80px;" onchange="changePeriod()">
             </div>
-            <div class="controls-group">
-                <div>
-                    <label for="monthPicker" style="font-size: 12px; display: block; margin-bottom: 3px;">Ubah Bulan & Tahun:</label>
-                    <input type="month" id="monthPicker" class="month-selector" value="2026-06">
-                </div>
-                <button id="btnSavePng" class="btn-save" title="Simpan laporan ke format PNG">Simpan ke PNG</button>
-                <button id="btnReset" class="btn-reset" title="Reset data bulan ini">Reset Bulan Ini</button>
+
+            <div class="action-bar">
+                <button class="btn" onclick="addRow()">+ Tambah Baris</button>
             </div>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="summary-cards">
-            <div class="card green">
-                <div class="card-title">Total Pemasukan</div>
-                <div class="card-value" id="val-pemasukan">Rp 0</div>
-            </div>
-            <div class="card red">
-                <div class="card-title">Total Pengeluaran</div>
-                <div class="card-value" id="val-pengeluaran">Rp 0</div>
-            </div>
-            <div class="card blue">
-                <div class="card-title">Penghasilan Bersih</div>
-                <div class="card-value" id="val-bersih">Rp 0</div>
-            </div>
-            <div class="card orange">
-                <div class="card-title">Total Order/Trip</div>
-                <div class="card-value" id="val-trip">0 Order</div>
-                <div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div>
-            </div>
-        </div>
-
-        <!-- Table Section -->
-        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal</div>
-        <div class="table-container">
-            <table id="report-table">
+        <div class="table-responsive">
+            <table id="laporanTable">
                 <thead>
                     <tr>
                         <th>Tanggal</th>
-                        <th class="text-center">Trip</th>
-                        <th class="text-right">Argo kotor</th>
-                        <th class="text-right">Potongan aplikasi</th>
-                        <th class="text-right">Penghasilan Bersih</th>
-                        <th class="text-right">Persentase</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Baris tabel harian -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Category Cards Bottom -->
-        <div class="section-title">Rincian Kategori</div>
-        <div class="category-cards">
-            <div class="cat-card">
-                <div class="cat-title">Argo Aplikasi + Tip</div>
-                <div class="cat-value" id="cat-argo">Rp 0</div>
-            </div>
-            <div class="cat-card">
-                <div class="cat-title">Bonus Stiker</div>
-                <div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div>
-            </div>
-            <div class="cat-card">
-                <div class="cat-title">Potongan Aplikasi</div>
-                <div class="cat-value" id="cat-potongan">Rp 0</div>
-            </div>
-            <div class="cat-card">
-                <div class="cat-title">BBM</div>
-                <div class="cat-value" id="cat-bbm" contenteditable="true" inputmode="numeric">Rp 0</div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer" id="footer-text">
-            Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
-        </div>
-    </div>
-
-    <!-- CONTAINER LAPORAN TAHUNAN -->
-    <div class="container" id="capture-area-yearly">
-        <div class="header" style="background-color: #2b6cb0;">
-            <div>
-                <h1>Laporan Tahunan Pendapatan Lalamove</h1>
-                <p id="header-periode-yearly">Rekapitulasi Tahun: 2026</p>
-            </div>
-        </div>
-
-        <div class="section-title">Rekapitulasi Per Bulan</div>
-        <div class="table-container" style="margin-bottom: 20px;">
-            <table id="yearly-table">
-                <thead>
-                    <tr>
-                        <th>Bulan</th>
-                        <th class="text-center">Total Trip</th>
-                        <th class="text-right">Total Pemasukan</th>
+                        <th>Deskripsi</th>
+                        <th class="text-right">Pemasukan</th>
                         <th class="text-right">Potongan Aplikasi</th>
-                        <th class="text-right">Pengeluaran BBM</th>
-                        <th class="text-right">Penghasilan Bersih</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Diisi otomatis oleh JavaScript -->
+                    <!-- Data dinamis dimuat via script -->
                 </tbody>
             </table>
         </div>
-
-        <div class="footer" id="footer-text-yearly">
-            Laporan Akumulasi Tahunan • 2026
-        </div>
+        
+        <div id="notification"></div>
     </div>
 
-</div>
+    <script>
+        const table = document.getElementById('laporanTable').getElementsByTagName('tbody')[0];
+        const notification = document.getElementById('notification');
+        const selectBulan = document.getElementById('selectBulan');
+        const inputTahun = document.getElementById('inputTahun');
+        const mainTitle = document.getElementById('mainTitle');
 
-<script>
-    const namaBulan = [
-        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", 
-        "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
-    ];
+        selectBulan.value = "Juni";
+        inputTahun.value = "2026";
 
-    const namaBulanPanjang = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
+        const defaultData = [
+            ["01 Des 25", "Argo kotor", "Rp 100,000.00", ""],
+            ["", "Argo kotor", "Rp 150,000.00", ""],
+            ["02 Des 25", "Argo kotor", "Rp 70,000.00", ""],
+            ["", "Potongan aplikasi", "", ""],
+            ["", "Argo kotor", "Rp 100,000.00", ""],
+            ["", "Potongan aplikasi", "", ""],
+            ["", "Argo kotor", "Rp 58,129.00", ""],
+            ["", "Potongan aplikasi", "", ""],
+            ["", "Bonus stiker", "Rp 200,000.00", ""],
+            ["", "Bbm", "", ""]
+        ];
 
-    function formatRupiah(angka) {
-        return 'Rp ' + Number(angka).toLocaleString('id-ID');
-    }
-
-    function getStorageKey(year, monthIndex) {
-        const mStr = String(monthIndex + 1).padStart(2, '0');
-        return `lalamove_data_${year}-${mStr}`;
-    }
-
-    function getBbmStorageKey(year, monthIndex) {
-        const mStr = String(monthIndex + 1).padStart(2, '0');
-        return `lalamove_bbm_${year}-${mStr}`;
-    }
-
-    function getBonusStorageKey(year, monthIndex) {
-        const mStr = String(monthIndex + 1).padStart(2, '0');
-        return `lalamove_bonus_${year}-${mStr}`;
-    }
-
-    function getCurrentStorageKeys() {
-        const pickerValue = document.getElementById('monthPicker').value;
-        return {
-            data: `lalamove_data_${pickerValue}`,
-            bbm: `lalamove_bbm_${pickerValue}`,
-            bonus: `lalamove_bonus_${pickerValue}`
-        };
-    }
-
-    function loadSavedData(key) {
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                return [];
-            }
-        }
-        return [];
-    }
-
-    function loadSavedBbm(key) {
-        const saved = localStorage.getItem(key);
-        return saved !== null ? parseFloat(saved) : null;
-    }
-
-    function loadSavedBonus(key) {
-        const saved = localStorage.getItem(key);
-        return saved !== null ? parseFloat(saved) : null;
-    }
-
-    function saveData() {
-        const keys = getCurrentStorageKeys();
-        const rows = document.querySelectorAll('#report-table tbody tr');
-        let dataToSave = [];
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const trip = parseInt(cells[1].innerText) || 0;
-            const pemasukan = parseFloat(cells[2].innerText.replace(/[^0-9]/g, '')) || 0;
-            const pengeluaran = parseFloat(cells[3].innerText.replace(/[^0-9]/g, '')) || 0;
-            dataToSave.push({ trip, pemasukan, pengeluaran });
-        });
-        localStorage.setItem(keys.data, JSON.stringify(dataToSave));
-
-        const bbmVal = parseFloat(document.getElementById('cat-bbm').innerText.replace(/[^0-9]/g, '')) || 0;
-        localStorage.setItem(keys.bbm, bbmVal);
-
-        const bonusVal = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
-        localStorage.setItem(keys.bonus, bonusVal);
-
-        const pickerValue = document.getElementById('monthPicker').value;
-        const year = parseInt(pickerValue.split('-')[0]);
-        generateYearlyReport(year);
-    }
-
-    function generateTableRows(year, monthIndex) {
-        const tbody = document.querySelector('#report-table tbody');
-        tbody.innerHTML = '';
-        
-        const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
-        const formatTahun = String(year).slice(-2);
-        const keys = getCurrentStorageKeys();
-        const existingData = loadSavedData(keys.data);
-
-        for (let i = 1; i <= jumlahHari; i++) {
-            const tglStr = (i < 10 ? '0' + i : i) + ' ' + namaBulan[monthIndex] + ' ' + formatTahun;
-            // Nilai default trip diubah menjadi 0
-            const data = existingData[i - 1] || { trip: 0, pemasukan: 0, pengeluaran: 0 };
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${tglStr}</td>
-                <td class="text-center" contenteditable="true" inputmode="numeric">${data.trip}</td>
-                <td class="text-right text-green" contenteditable="true" inputmode="numeric">${data.pemasukan}</td>
-                <td class="text-right text-red" contenteditable="true" inputmode="numeric">${data.pengeluaran}</td>
-                <td class="text-right" style="font-weight: 500;">Rp 0</td>
-                <td class="text-right">
-                    <div class="progress-cell">
-                        <span class="percentage">0%</span>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
+        function getStorageKey() {
+            const bulan = selectBulan.value.toLowerCase();
+            const tahun = inputTahun.value;
+            return `laporan_lalamove_${bulan}_${tahun}`;
         }
 
-        const savedBbm = loadSavedBbm(keys.bbm);
-        if (savedBbm !== null) {
-            document.getElementById('cat-bbm').innerText = formatRupiah(savedBbm);
-        } else {
-            document.getElementById('cat-bbm').innerText = formatRupiah(0);
+        function updateTitle() {
+            mainTitle.innerText = `Master data Laporan Lalamove ${selectBulan.value} ${inputTahun.value}`;
         }
 
-        const savedBonus = loadSavedBonus(keys.bonus);
-        if (savedBonus !== null) {
-            document.getElementById('cat-bonus').innerText = formatRupiah(savedBonus);
-        } else {
-            document.getElementById('cat-bonus').innerText = formatRupiah(200000); 
-        }
-
-        attachTableEvents();
-        recalculate();
-        generateYearlyReport(year);
-    }
-
-    function generateYearlyReport(year) {
-        const tbodyYearly = document.querySelector('#yearly-table tbody');
-        tbodyYearly.innerHTML = '';
-
-        let totalYearTrip = 0;
-        let totalYearPemasukan = 0;
-        let totalYearPengeluaran = 0;
-        let totalYearBbm = 0;
-        let totalYearBersih = 0;
-
-        let monthlyBersihData = [];
-
-        for (let m = 0; m < 12; m++) {
-            const dKey = getStorageKey(year, m);
-            const bKey = getBbmStorageKey(year, m);
-            const boKey = getBonusStorageKey(year, m);
-
-            const monthData = loadSavedData(dKey);
-            const monthBbm = loadSavedBbm(bKey) || 0;
-            const monthBonus = loadSavedBonus(boKey) !== null ? loadSavedBonus(boKey) : (monthData.length > 0 ? 200000 : 0);
-
-            let mTrip = 0;
-            let mPemasukanHarian = 0;
-            let mPengeluaranHarian = 0;
-
-            monthData.forEach(row => {
-                mTrip += row.trip || 0;
-                mPemasukanHarian += row.pemasukan || 0;
-                mPengeluaranHarian += row.pengeluaran || 0;
-            });
-
-            let mTotalPemasukan = mPemasukanHarian + monthBonus;
-            let mTotalPengeluaran = mPengeluaranHarian + monthBbm;
-            let mBersih = mTotalPemasukan - mTotalPengeluaran;
-
-            totalYearTrip += mTrip;
-            totalYearPemasukan += mTotalPemasukan;
-            totalYearPengeluaran += mPengeluaranHarian;
-            totalYearBbm += monthBbm;
-            totalYearBersih += mBersih;
-
-            monthlyBersihData.push({
-                monthName: namaBulanPanjang[m],
-                trip: mTrip,
-                pemasukan: mTotalPemasukan,
-                pengeluaranHarian: mPengeluaranHarian,
-                bbm: monthBbm,
-                bersih: mBersih,
-                isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0)
+        function renderTable(rowsData) {
+            table.innerHTML = "";
+            rowsData.forEach(rowData => {
+                insertRowToDOM(rowData[0], rowData[1], rowData[2], rowData[3]);
             });
         }
 
-        let maxMonthBersih = 0;
-        monthlyBersihData.forEach(item => {
-            if (item.bersih > maxMonthBersih) {
-                maxMonthBersih = item.bersih;
-            }
-        });
-
-        monthlyBersihData.forEach(item => {
-            let percentage = maxMonthBersih > 0 ? (item.bersih / maxMonthBersih) * 100 : 0;
-            if (percentage < 0) percentage = 0;
-            if (percentage > 100) percentage = 100;
-
-            const tr = document.createElement('tr');
-            if (item.isEmpty) {
-                tr.classList.add('row-zero');
-            }
-            tr.innerHTML = `
-                <td>${item.monthName}</td>
-                <td class="text-center">${item.trip} Order</td>
-                <td class="text-right text-green">${formatRupiah(item.pemasukan)}</td>
-                <td class="text-right text-red">${formatRupiah(item.pengeluaranHarian)}</td>
-                <td class="text-right text-red">${formatRupiah(item.bbm)}</td>
-                <td class="text-right">
-                    <div class="yearly-net-cell">
-                        <span class="yearly-net-text">${formatRupiah(item.bersih)}</span>
-                        <div class="yearly-progress-container">
-                            <div class="yearly-progress-fill" style="width: ${percentage}%;"></div>
-                        </div>
-                    </div>
-                </td>
-            `;
-            tbodyYearly.appendChild(tr);
-        });
-
-        // Tambahkan Baris Total ke bagian bawah tabel tahunan
-        const totalTr = document.createElement('tr');
-        totalTr.classList.add('row-total');
-        totalTr.innerHTML = `
-            <td>JUMLAH TOTAL</td>
-            <td class="text-center">${totalYearTrip} Order</td>
-            <td class="text-right text-green">${formatRupiah(totalYearPemasukan)}</td>
-            <td class="text-right text-red">${formatRupiah(totalYearPengeluaran)}</td>
-            <td class="text-right text-red">${formatRupiah(totalYearBbm)}</td>
-            <td class="text-right" style="font-weight: bold;">${formatRupiah(totalYearBersih)}</td>
-        `;
-        tbodyYearly.appendChild(totalTr);
-
-        document.getElementById('header-periode-yearly').innerText = `Rekapitulasi Tahun: ${year}`;
-        document.getElementById('footer-text-yearly').innerText = `Laporan Akumulasi Tahunan • ${year}`;
-    }
-
-    function recalculate() {
-        const rows = document.querySelectorAll('#report-table tbody tr');
-        let totalPemasukanHarian = 0;
-        let totalPengeluaranHarian = 0;
-        let totalTrip = 0;
-        let hariKerja = 0;
-
-        let tempRowsData = [];
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const trip = parseInt(cells[1].innerText) || 0;
-            const pemasukan = parseFloat(cells[2].innerText.replace(/[^0-9]/g, '')) || 0;
-            const pengeluaran = parseFloat(cells[3].innerText.replace(/[^0-9]/g, '')) || 0;
-            const bersih = pemasukan - pengeluaran;
-
-            totalTrip += trip;
-            totalPemasukanHarian += pemasukan;
-            totalPengeluaranHarian += pengeluaran;
-
-            if (trip > 0 || pemasukan > 0 || pengeluaran > 0) {
-                hariKerja++;
-            }
-
-            tempRowsData.push({ row, trip, pemasukan, pengeluaran, bersih });
-        });
-
-        const bonusValue = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
-        const bbmValue = parseFloat(document.getElementById('cat-bbm').innerText.replace(/[^0-9]/g, '')) || 0;
-
-        const totalPemasukanKeseluruhan = totalPemasukanHarian + bonusValue;
-        const totalPengeluaranKeseluruhan = totalPengeluaranHarian + bbmValue;
-        const penghasilanBersih = totalPemasukanKeseluruhan - totalPengeluaranKeseluruhan;
-
-        document.getElementById('val-pemasukan').innerText = formatRupiah(totalPemasukanKeseluruhan);
-        document.getElementById('val-pengeluaran').innerText = formatRupiah(totalPengeluaranKeseluruhan);
-        document.getElementById('val-bersih').innerText = formatRupiah(penghasilanBersih);
-        document.getElementById('val-trip').innerText = totalTrip + ' Order';
-        document.getElementById('val-hari-kerja').innerText = hariKerja + ' Hari Kerja';
-
-        document.getElementById('cat-argo').innerText = formatRupiah(totalPemasukanHarian);
-        document.getElementById('cat-potongan').innerText = formatRupiah(totalPengeluaranHarian); 
-
-        let maxBersih = 0;
-        tempRowsData.forEach(data => {
-            if (data.bersih > maxBersih) {
-                maxBersih = data.bersih;
-            }
-        });
-
-        tempRowsData.forEach(data => {
-            const cells = data.row.querySelectorAll('td');
+        function insertRowToDOM(tanggal = "", deskripsi = "", pemasukan = "", potongan = "") {
+            const newRow = table.insertRow();
             
-            cells[2].innerText = formatRupiah(data.pemasukan);
-            cells[3].innerText = formatRupiah(data.pengeluaran);
-            cells[4].innerText = formatRupiah(data.bersih);
+            // Pilihan opsi untuk dropdown deskripsi
+            const optionsList = ["Argo kotor", "Potongan aplikasi", "Bbm", "Bonus stiker"];
+            let optionsHtml = `<option value="" disabled ${!deskripsi ? 'selected' : ''}>Pilih Deskripsi</option>`;
+            
+            optionsList.forEach(opt => {
+                const selected = (deskripsi === opt) ? 'selected' : '';
+                optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+            });
 
-            let percentage = maxBersih > 0 ? (data.bersih / maxBersih) * 100 : 0;
-            if (percentage < 0) percentage = 0;
-            if (percentage > 100) percentage = 100;
-            let barWidth = percentage; 
-
-            const percentageCell = cells[5];
-            percentageCell.innerHTML = `
-                <div class="progress-cell">
-                    <span class="percentage">${percentage.toFixed(1)}%</span>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${barWidth}%;"></div></div>
-                </div>
+            newRow.innerHTML = `
+                <td contenteditable="true">${tanggal}</td>
+                <td>
+                    <select class="deskripsi-select" onchange="saveTableData()">
+                        ${optionsHtml}
+                    </select>
+                </td>
+                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${pemasukan}</td>
+                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${potongan}</td>
+                <td class="text-center">
+                    <button class="btn btn-delete" onclick="deleteRow(this)">Hapus</button>
+                </td>
             `;
+        }
 
-            if (data.trip === 0 && data.pemasukan === 0 && data.pengeluaran === 0) {
-                data.row.classList.add('row-zero');
+        function loadTableData() {
+            updateTitle();
+            const STORAGE_KEY = getStorageKey();
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            
+            if (savedData) {
+                renderTable(JSON.parse(savedData));
             } else {
-                data.row.classList.remove('row-zero');
-            }
-        });
-
-        saveData();
-    }
-
-    function attachTableEvents() {
-        document.querySelectorAll('#report-table tbody td[contenteditable="true"]').forEach(cell => {
-            cell.addEventListener('blur', recalculate);
-            cell.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    cell.blur();
+                if (selectBulan.value === "Juni" && inputTahun.value === "2026") {
+                    renderTable(defaultData);
+                } else {
+                    renderTable([]);
                 }
-            });
-        });
-
-        const bbmEl = document.getElementById('cat-bbm');
-        bbmEl.addEventListener('blur', function() {
-            const val = parseFloat(this.innerText.replace(/[^0-9]/g, '')) || 0;
-            this.innerText = formatRupiah(val);
-            recalculate();
-        });
-        bbmEl.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                bbmEl.blur();
             }
-        });
-
-        const bonusEl = document.getElementById('cat-bonus');
-        bonusEl.addEventListener('blur', function() {
-            const val = parseFloat(this.innerText.replace(/[^0-9]/g, '')) || 0;
-            this.innerText = formatRupiah(val);
-            recalculate();
-        });
-        bonusEl.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                bonusEl.blur();
-            }
-        });
-    }
-
-    function handleMonthChange() {
-        const pickerValue = document.getElementById('monthPicker').value;
-        if (!pickerValue) return;
-
-        const [yearStr, monthStr] = pickerValue.split('-');
-        const year = parseInt(yearStr);
-        const monthIndex = parseInt(monthStr) - 1;
-
-        generateTableRows(year, monthIndex);
-
-        const teksPeriode = `${namaBulanPanjang[monthIndex]} ${year}`;
-        document.getElementById('header-periode').innerText = `Periode: ${teksPeriode} • Dashboard Aktivitas Harian & Analisis Kinerja`;
-        document.getElementById('footer-text').innerText = `Laporan Keuangan Driver Lalamove • ${teksPeriode} • Format Satu Halaman`;
-    }
-
-    document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
-
-    document.getElementById('btnSavePng').addEventListener('click', function() {
-        const captureElement = document.getElementById('full-capture-wrapper');
-        
-        html2canvas(captureElement, {
-            scale: 2, 
-            useCORS: true
-        }).then(canvas => {
-            const imageURL = canvas.toDataURL('image/png');
-            const pickerValue = document.getElementById('monthPicker').value;
-            
-            const link = document.createElement('a');
-            link.href = imageURL;
-            link.download = `Laporan-Lalamove-Full-${pickerValue}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }).catch(err => {
-            console.error('Gagal menyimpan gambar:', err);
-            alert('Terjadi kesalahan saat mengunduh gambar.');
-        });
-    });
-
-    document.getElementById('btnReset').addEventListener('click', function() {
-        if (confirm("Apakah Anda yakin ingin mereset data untuk bulan ini?")) {
-            const keys = getCurrentStorageKeys();
-            localStorage.removeItem(keys.data);
-            localStorage.removeItem(keys.bbm);
-            localStorage.removeItem(keys.bonus);
-            handleMonthChange();
         }
-    });
 
-    window.onload = function() {
-        handleMonthChange();
-    };
-</script>
+        function changePeriod() {
+            loadTableData();
+        }
+
+        function addRow() {
+            insertRowToDOM("", "", "", "");
+            saveTableData();
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            saveTableData();
+        }
+
+        // Fungsi Format Rupiah Real-time saat mengetik dan deteksi perubahan select
+        document.getElementById('laporanTable').addEventListener('input', function(e) {
+            if (e.target.classList.contains('currency-input')) {
+                let el = e.target;
+                let value = el.innerText.replace(/[^0-9]/g, ''); // Ambil angka saja
+                
+                if (value === "") {
+                    el.innerText = "";
+                } else {
+                    let formatted = Number(value).toLocaleString('id-ID');
+                    el.innerText = "Rp " + formatted;
+                    
+                    // Kembalikan kursor ke posisi akhir teks
+                    let range = document.createRange();
+                    let sel = window.getSelection();
+                    range.selectNodeContents(el);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
+            saveTableData();
+        });
+
+        function saveTableData() {
+            const STORAGE_KEY = getStorageKey();
+            const rowsData = [];
+            const rows = table.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const rowData = [];
+                const tanggalCell = row.querySelectorAll('td')[0];
+                const selectCell = row.querySelector('td select');
+                const pemasukanCell = row.querySelectorAll('td')[2];
+                const potonganCell = row.querySelectorAll('td')[3];
+
+                rowData.push(tanggalCell.innerText);
+                rowData.push(selectCell ? selectCell.value : "");
+                rowData.push(pemasukanCell.innerText);
+                rowData.push(potonganCell.innerText);
+
+                rowsData.push(rowData);
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rowsData));
+            
+            notification.innerText = "Perubahan tersimpan otomatis...";
+            setTimeout(() => {
+                notification.innerText = "";
+            }, 1500);
+        }
+
+        window.onload = loadTableData;
+    </script>
 
 </body>
 </html>

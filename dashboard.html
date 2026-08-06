@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Pendapatan Lalamove</title>
+    <!-- Memuat html2canvas melalui CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        /* Header */
+        .header {
+            background-color: #00b14f;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .btn-nav-file1 {
+            background-color: #f37021;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .btn-nav-file1:hover {
+            background-color: #d95e14;
+        }
+
+        /* Month Selector & Controls Styling */
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .month-selector {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .month-selector::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:hover {
+            background-color: #c53030;
+        }
+
+        .btn-save {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #2b6cb0;
+        }
+
+        /* Summary Cards Top */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 12px 20px;
+            background-color: #fdfdfd;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            border-left-width: 3px;
+        }
+
+        .card.green { border-left-color: #00b14f; }
+        .card.red { border-left-color: #e53e3e; }
+        .card.blue { border-left-color: #3182ce; }
+        .card.orange { border-left-color: #dd6b20; }
+
+        .card-title {
+            font-size: 9px;
+            color: #718096;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .card.green .card-value { color: #00b14f; }
+        .card.red .card-value { color: #e53e3e; }
+        .card.blue .card-value { color: #3182ce; }
+        .card.orange .card-value { color: #dd6b20; }
+
+        .card-subvalue {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 2px;
+            font-weight: normal;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 20px;
+            margin: 15px 0 10px 0;
+            color: #2d3748;
+        }
+
+        .table-container {
+            padding: 0 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            text-align: left;
+            padding: 10px 4px; 
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 8px 4px; 
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        tr.row-zero {
+            background-color: #ffe6e6 !important;
+        }
+
+        tr.row-zero td {
+            color: #e29999 !important;
+        }
+
+        tr.row-total {
+            background-color: #edf2f7 !important;
+            font-weight: bold;
+        }
+
+        tr.row-total td {
+            border-top: 2px solid #cbd5e0;
+            border-bottom: 2px solid #cbd5e0;
+            color: #1a202c;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-green { color: #00b14f; font-weight: 500; }
+        .text-red { color: #e53e3e; font-weight: 500; }
+
+        .progress-cell {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .percentage {
+            font-size: 11px;
+            color: #3182ce;
+            min-width: 32px;
+            text-align: left;
+        }
+
+        .progress-bar-bg {
+            width: 70px;
+            background-color: #e2e8f0;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: #3182ce;
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .yearly-net-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .yearly-net-text { font-weight: 500; }
+
+        .yearly-progress-container {
+            width: 100%;
+            max-width: 120px;
+            background-color: #e2e8f0;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .yearly-progress-fill {
+            background-color: #00b14f;
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .category-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 12px 20px;
+        }
+
+        .cat-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .cat-title {
+            font-size: 9px;
+            color: #718096;
+            margin-bottom: 4px;
+        }
+
+        .cat-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #00b14f;
+        }
+
+        .cat-card:nth-child(3) .cat-value,
+        .cat-card:nth-child(4) .cat-value {
+            color: #e53e3e;
+        }
+
+        .cat-value[contenteditable="true"] {
+            outline: 1px dashed #cbd5e0;
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: text;
+        }
+
+        .cat-value[contenteditable="true"]:focus {
+            outline: 2px solid #3182ce;
+            background: #f7fafc;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #a0aec0;
+            padding: 15px;
+            border-top: 1px solid #edf2f7;
+            background-color: #fafbfc;
+        }
+
+        @media (max-width: 768px) {
+            .summary-cards, .category-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="full-capture-wrapper">
+
+    <div class="container" id="capture-area">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <!-- Tombol Navigasi ke File 1 -->
+                <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
+                <h1>Laporan Pendapatan Lalamove</h1>
+                <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
+            </div>
+            <div class="controls-group">
+                <div>
+                    <label for="monthPicker" style="font-size: 12px; display: block; margin-bottom: 3px;">Ubah Bulan & Tahun:</label>
+                    <input type="month" id="monthPicker" class="month-selector" value="2026-06">
+                </div>
+                <button id="btnSavePng" class="btn-save" title="Simpan laporan ke format PNG">Simpan ke PNG</button>
+                <button id="btnReset" class="btn-reset" title="Reset data bulan ini">Reset Bulan Ini</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card green">
+                <div class="card-title">Total Pemasukan</div>
+                <div class="card-value" id="val-pemasukan">Rp 0</div>
+            </div>
+            <div class="card red">
+                <div class="card-title">Total Pengeluaran</div>
+                <div class="card-value" id="val-pengeluaran">Rp 0</div>
+            </div>
+            <div class="card blue">
+                <div class="card-title">Penghasilan Bersih</div>
+                <div class="card-value" id="val-bersih">Rp 0</div>
+            </div>
+            <div class="card orange">
+                <div class="card-title">Total Order/Trip</div>
+                <div class="card-value" id="val-trip">0 Order</div>
+                <div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal</div>
+        <div class="table-container">
+            <table id="report-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th class="text-center">Trip</th>
+                        <th class="text-right">Argo kotor</th>
+                        <th class="text-right">Potongan aplikasi</th>
+                        <th class="text-right">Penghasilan Bersih</th>
+                        <th class="text-right">Persentase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Baris tabel harian -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Category Cards Bottom -->
+        <div class="section-title">Rincian Kategori</div>
+        <div class="category-cards">
+            <div class="cat-card">
+                <div class="cat-title">Argo Aplikasi + Tip</div>
+                <div class="cat-value" id="cat-argo">Rp 0</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">Bonus Stiker</div>
+                <div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">Potongan Aplikasi</div>
+                <div class="cat-value" id="cat-potongan">Rp 0</div>
+            </div>
+            <div class="cat-card">
+                <div class="cat-title">BBM (Otomatis dari File 1)</div>
+                <div class="cat-value" id="cat-bbm">Rp 0</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer" id="footer-text">
+            Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
+        </div>
+    </div>
+
+    <!-- CONTAINER LAPORAN TAHUNAN -->
+    <div class="container" id="capture-area-yearly">
+        <div class="header" style="background-color: #2b6cb0;">
+            <div>
+                <h1>Laporan Tahunan Pendapatan Lalamove</h1>
+                <p id="header-periode-yearly">Rekapitulasi Tahun: 2026</p>
+            </div>
+        </div>
+
+        <div class="section-title">Rekapitulasi Per Bulan</div>
+        <div class="table-container" style="margin-bottom: 20px;">
+            <table id="yearly-table">
+                <thead>
+                    <tr>
+                        <th>Bulan</th>
+                        <th class="text-center">Total Trip</th>
+                        <th class="text-right">Total Pemasukan</th>
+                        <th class="text-right">Potongan Aplikasi</th>
+                        <th class="text-right">Pengeluaran BBM</th>
+                        <th class="text-right">Penghasilan Bersih</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer" id="footer-text-yearly">
+            Laporan Akumulasi Tahunan • 2026
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const namaBulan = [
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", 
+        "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+    ];
+
+    const namaBulanPanjang = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    function formatRupiah(angka) {
+        return 'Rp ' + Number(angka).toLocaleString('id-ID');
+    }
+
+    function getFile1StorageKey(bulanNama, tahun) {
+        return `laporan_lalamove_${bulanNama.toLowerCase()}_${tahun}`;
+    }
+
+    function getBonusStorageKey(year, monthIndex) {
+        const mStr = String(monthIndex + 1).padStart(2, '0');
+        return `lalamove_bonus_${year}-${mStr}`;
+    }
+
+    function getCurrentStorageKeys() {
+        const pickerValue = document.getElementById('monthPicker').value;
+        return {
+            bonus: `lalamove_bonus_${pickerValue}`
+        };
+    }
+
+    function loadSavedDataAndBbm(year, monthIndex) {
+        const bulanNama = namaBulanPanjang[monthIndex];
+        const file1Key = getFile1StorageKey(bulanNama, year);
+        const rawData = localStorage.getItem(file1Key);
+
+        const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
+        let dailySummary = [];
+        for (let i = 0; i < jumlahHari; i++) {
+            dailySummary.push({ trip: 0, pemasukan: 0, pengeluaran: 0 });
+        }
+
+        let totalBbmBulanIni = 0;
+
+        if (rawData) {
+            try {
+                const parsedRows = JSON.parse(rawData);
+                let currentDayIndex = -1;
+
+                parsedRows.forEach(row => {
+                    const tanggalCol = row[0] ? row[0].trim() : "";
+                    const deskripsiCol = row[1] ? row[1].trim().toLowerCase() : "";
+                    const pemasukanStr = row[2] ? row[2].replace(/[^0-9]/g, '') : "";
+                    const potonganStr = row[3] ? row[3].replace(/[^0-9]/g, '') : "";
+
+                    const pemasukanVal = parseFloat(pemasukanStr) || 0;
+                    const potonganVal = parseFloat(potonganStr) || 0;
+
+                    if (tanggalCol !== "") {
+                        const dayMatch = tanggalCol.match(/^(\d{1,2})/);
+                        if (dayMatch) {
+                            currentDayIndex = parseInt(dayMatch[1], 10) - 1;
+                        }
+                    }
+
+                    if (deskripsiCol === "bbm") {
+                        totalBbmBulanIni += (pemasukanVal > 0 ? pemasukanVal : potonganVal);
+                    } else if (currentDayIndex >= 0 && currentDayIndex < jumlahHari) {
+                        if (deskripsiCol === "argo kotor") {
+                            dailySummary[currentDayIndex].trip += 1;
+                            dailySummary[currentDayIndex].pemasukan += pemasukanVal;
+                        } else if (deskripsiCol === "potongan aplikasi") {
+                            dailySummary[currentDayIndex].pengeluaran += potonganVal;
+                        } else if (pemasukanVal > 0) {
+                            dailySummary[currentDayIndex].pemasukan += pemasukanVal;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Gagal memparsing data File 1:", e);
+            }
+        }
+        return { dailySummary, totalBbmBulanIni };
+    }
+
+    function loadSavedBonus(key) {
+        const saved = localStorage.getItem(key);
+        return saved !== null ? parseFloat(saved) : null;
+    }
+
+    function saveData() {
+        const keys = getCurrentStorageKeys();
+        const bonusVal = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
+        localStorage.setItem(keys.bonus, bonusVal);
+
+        const pickerValue = document.getElementById('monthPicker').value;
+        const year = parseInt(pickerValue.split('-')[0]);
+        generateYearlyReport(year);
+    }
+
+    function generateTableRows(year, monthIndex) {
+        const tbody = document.querySelector('#report-table tbody');
+        tbody.innerHTML = '';
+        
+        const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
+        const formatTahun = String(year).slice(-2);
+        
+        const resultData = loadSavedDataAndBbm(year, monthIndex);
+        const dailyData = resultData.dailySummary;
+
+        for (let i = 1; i <= jumlahHari; i++) {
+            const tglStr = (i < 10 ? '0' + i : i) + ' ' + namaBulan[monthIndex] + ' ' + formatTahun;
+            const data = dailyData[i - 1] || { trip: 0, pemasukan: 0, pengeluaran: 0 };
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${tglStr}</td>
+                <td class="text-center" style="font-weight: bold; color: #3182ce;">${data.trip}</td>
+                <td class="text-right text-green">${formatRupiah(data.pemasukan)}</td>
+                <td class="text-right text-red">${formatRupiah(data.pengeluaran)}</td>
+                <td class="text-right" style="font-weight: 500;">Rp 0</td>
+                <td class="text-right">
+                    <div class="progress-cell">
+                        <span class="percentage">0%</span>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        document.getElementById('cat-bbm').innerText = formatRupiah(resultData.totalBbmBulanIni);
+
+        const keys = getCurrentStorageKeys();
+        const savedBonus = loadSavedBonus(keys.bonus);
+        document.getElementById('cat-bonus').innerText = formatRupiah(savedBonus !== null ? savedBonus : 200000); 
+
+        attachTableEvents();
+        recalculate();
+        generateYearlyReport(year);
+    }
+
+    function generateYearlyReport(year) {
+        const tbodyYearly = document.querySelector('#yearly-table tbody');
+        tbodyYearly.innerHTML = '';
+
+        let totalYearTrip = 0;
+        let totalYearPemasukan = 0;
+        let totalYearPengeluaran = 0;
+        let totalYearBbm = 0;
+        let totalYearBersih = 0;
+
+        let monthlyBersihData = [];
+
+        for (let m = 0; m < 12; m++) {
+            const monthResult = loadSavedDataAndBbm(year, m);
+            const monthData = monthResult.dailySummary;
+            const monthBbm = monthResult.totalBbmBulanIni;
+
+            const boKey = getBonusStorageKey(year, m);
+            const monthBonus = loadSavedBonus(boKey) !== null ? loadSavedBonus(boKey) : 200000;
+
+            let mTrip = 0;
+            let mPemasukanHarian = 0;
+            let mPengeluaranHarian = 0;
+
+            monthData.forEach(row => {
+                mTrip += row.trip || 0;
+                mPemasukanHarian += row.pemasukan || 0;
+                mPengeluaranHarian += row.pengeluaran || 0;
+            });
+
+            let mTotalPemasukan = mPemasukanHarian + monthBonus;
+            let mTotalPengeluaran = mPengeluaranHarian + monthBbm;
+            let mBersih = mTotalPemasukan - mTotalPengeluaran;
+
+            totalYearTrip += mTrip;
+            totalYearPemasukan += mTotalPemasukan;
+            totalYearPengeluaran += mPengeluaranHarian;
+            totalYearBbm += monthBbm;
+            totalYearBersih += mBersih;
+
+            monthlyBersihData.push({
+                monthName: namaBulanPanjang[m],
+                trip: mTrip,
+                pemasukan: mTotalPemasukan,
+                pengeluaranHarian: mPengeluaranHarian,
+                bbm: monthBbm,
+                bersih: mBersih,
+                isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0 && monthBbm === 0)
+            });
+        }
+
+        let maxMonthBersih = 0;
+        monthlyBersihData.forEach(item => {
+            if (item.bersih > maxMonthBersih) maxMonthBersih = item.bersih;
+        });
+
+        monthlyBersihData.forEach(item => {
+            let percentage = maxMonthBersih > 0 ? (item.bersih / maxMonthBersih) * 100 : 0;
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+
+            const tr = document.createElement('tr');
+            if (item.isEmpty) tr.classList.add('row-zero');
+            tr.innerHTML = `
+                <td>${item.monthName}</td>
+                <td class="text-center">${item.trip} Order</td>
+                <td class="text-right text-green">${formatRupiah(item.pemasukan)}</td>
+                <td class="text-right text-red">${formatRupiah(item.pengeluaranHarian)}</td>
+                <td class="text-right text-red">${formatRupiah(item.bbm)}</td>
+                <td class="text-right">
+                    <div class="yearly-net-cell">
+                        <span class="yearly-net-text">${formatRupiah(item.bersih)}</span>
+                        <div class="yearly-progress-container">
+                            <div class="yearly-progress-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            tbodyYearly.appendChild(tr);
+        });
+
+        const totalTr = document.createElement('tr');
+        totalTr.classList.add('row-total');
+        totalTr.innerHTML = `
+            <td>JUMLAH TOTAL</td>
+            <td class="text-center">${totalYearTrip} Order</td>
+            <td class="text-right text-green">${formatRupiah(totalYearPemasukan)}</td>
+            <td class="text-right text-red">${formatRupiah(totalYearPengeluaran)}</td>
+            <td class="text-right text-red">${formatRupiah(totalYearBbm)}</td>
+            <td class="text-right" style="font-weight: bold;">${formatRupiah(totalYearBersih)}</td>
+        `;
+        tbodyYearly.appendChild(totalTr);
+
+        document.getElementById('header-periode-yearly').innerText = `Rekapitulasi Tahun: ${year}`;
+        document.getElementById('footer-text-yearly').innerText = `Laporan Akumulasi Tahunan • ${year}`;
+    }
+
+    function recalculate() {
+        const rows = document.querySelectorAll('#report-table tbody tr');
+        let totalPemasukanHarian = 0;
+        let totalPengeluaranHarian = 0;
+        let totalTrip = 0;
+        let hariKerja = 0;
+
+        let tempRowsData = [];
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const trip = parseInt(cells[1].innerText) || 0;
+            const pemasukan = parseFloat(cells[2].innerText.replace(/[^0-9]/g, '')) || 0;
+            const pengeluaran = parseFloat(cells[3].innerText.replace(/[^0-9]/g, '')) || 0;
+            const bersih = pemasukan - pengeluaran;
+
+            totalTrip += trip;
+            totalPemasukanHarian += pemasukan;
+            totalPengeluaranHarian += pengeluaran;
+
+            if (trip > 0 || pemasukan > 0 || pengeluaran > 0) {
+                hariKerja++;
+            }
+
+            tempRowsData.push({ row, trip, pemasukan, pengeluaran, bersih });
+        });
+
+        const bonusValue = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
+        const bbmValue = parseFloat(document.getElementById('cat-bbm').innerText.replace(/[^0-9]/g, '')) || 0;
+
+        const totalPemasukanKeseluruhan = totalPemasukanHarian + bonusValue;
+        const totalPengeluaranKeseluruhan = totalPengeluaranHarian + bbmValue;
+        const penghasilanBersih = totalPemasukanKeseluruhan - totalPengeluaranKeseluruhan;
+
+        document.getElementById('val-pemasukan').innerText = formatRupiah(totalPemasukanKeseluruhan);
+        document.getElementById('val-pengeluaran').innerText = formatRupiah(totalPengeluaranKeseluruhan);
+        document.getElementById('val-bersih').innerText = formatRupiah(penghasilanBersih);
+        document.getElementById('val-trip').innerText = totalTrip + ' Order';
+        document.getElementById('val-hari-kerja').innerText = hariKerja + ' Hari Kerja';
+
+        document.getElementById('cat-argo').innerText = formatRupiah(totalPemasukanHarian);
+        document.getElementById('cat-potongan').innerText = formatRupiah(totalPengeluaranHarian); 
+
+        let maxBersih = 0;
+        tempRowsData.forEach(data => {
+            if (data.bersih > maxBersih) maxBersih = data.bersih;
+        });
+
+        tempRowsData.forEach(data => {
+            const cells = data.row.querySelectorAll('td');
+            cells[4].innerText = formatRupiah(data.bersih);
+
+            let percentage = maxBersih > 0 ? (data.bersih / maxBersih) * 100 : 0;
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+
+            const percentageCell = cells[5];
+            percentageCell.innerHTML = `
+                <div class="progress-cell">
+                    <span class="percentage">${percentage.toFixed(1)}%</span>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percentage}%;"></div></div>
+                </div>
+            `;
+
+            if (data.trip === 0 && data.pemasukan === 0 && data.pengeluaran === 0) {
+                data.row.classList.add('row-zero');
+            } else {
+                data.row.classList.remove('row-zero');
+            }
+        });
+
+        saveData();
+    }
+
+    function attachTableEvents() {
+        const bonusEl = document.getElementById('cat-bonus');
+        bonusEl.addEventListener('blur', function() {
+            const val = parseFloat(this.innerText.replace(/[^0-9]/g, '')) || 0;
+            this.innerText = formatRupiah(val);
+            recalculate();
+        });
+        bonusEl.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); bonusEl.blur(); }
+        });
+    }
+
+    function handleMonthChange() {
+        const pickerValue = document.getElementById('monthPicker').value;
+        if (!pickerValue) return;
+
+        const [yearStr, monthStr] = pickerValue.split('-');
+        const year = parseInt(yearStr);
+        const monthIndex = parseInt(monthStr) - 1;
+
+        generateTableRows(year, monthIndex);
+
+        const teksPeriode = `${namaBulanPanjang[monthIndex]} ${year}`;
+        document.getElementById('header-periode').innerText = `Periode: ${teksPeriode} • Dashboard Aktivitas Harian & Analisis Kinerja`;
+        document.getElementById('footer-text').innerText = `Laporan Keuangan Driver Lalamove • ${teksPeriode} • Format Satu Halaman`;
+    }
+
+    document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
+
+    document.getElementById('btnSavePng').addEventListener('click', function() {
+        const captureElement = document.getElementById('full-capture-wrapper');
+        html2canvas(captureElement, { scale: 2, useCORS: true }).then(canvas => {
+            const imageURL = canvas.toDataURL('image/png');
+            const pickerValue = document.getElementById('monthPicker').value;
+            const link = document.createElement('a');
+            link.href = imageURL;
+            link.download = `Laporan-Lalamove-Full-${pickerValue}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }).catch(err => {
+            console.error('Gagal menyimpan gambar:', err);
+            alert('Terjadi kesalahan saat mengunduh gambar.');
+        });
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+        if (confirm("Apakah Anda yakin ingin mereset bonus bulan ini?")) {
+            const keys = getCurrentStorageKeys();
+            localStorage.removeItem(keys.bonus);
+            handleMonthChange();
+        }
+    });
+
+    window.onload = function() {
+        handleMonthChange();
+    };
+</script>
+
+</body>
+</html>
