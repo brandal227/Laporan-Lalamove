@@ -579,7 +579,8 @@
 
         for (let i = 1; i <= jumlahHari; i++) {
             const tglStr = (i < 10 ? '0' + i : i) + ' ' + namaBulan[monthIndex] + ' ' + formatTahun;
-            const data = existingData[i - 1] || { trip: (i % 3 === 0 ? 2 : 1), pemasukan: 0, pengeluaran: 0 };
+            // Nilai default trip diubah menjadi 0
+            const data = existingData[i - 1] || { trip: 0, pemasukan: 0, pengeluaran: 0 };
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -854,7 +855,6 @@
 
     document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
 
-    // Diperbarui: Mengarahkan html2canvas ke elemen pembungkus seluruh halaman
     document.getElementById('btnSavePng').addEventListener('click', function() {
         const captureElement = document.getElementById('full-capture-wrapper');
         
