@@ -22,16 +22,14 @@
 
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 0 auto 20px auto;
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
         }
 
-        /* Header yang Lebih Rapinya Terstruktur */
         .header {
             background-color: #00b14f;
             color: white;
@@ -91,7 +89,6 @@
             background-color: #2b6cb0;
         }
 
-        /* Kelompok Kontrol Kanan (Bulan, Simpan PNG, Reset) */
         .controls-group {
             display: flex;
             gap: 10px;
@@ -143,7 +140,6 @@
             background-color: #e53e3e;
             color: white;
         }
-
         .btn-reset:hover {
             background-color: #c53030;
         }
@@ -152,12 +148,10 @@
             background-color: #3182ce;
             color: white;
         }
-
         .btn-save:hover {
             background-color: #2b6cb0;
         }
 
-        /* Summary Cards Top */
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -238,8 +232,13 @@
             color: #2d3748;
         }
 
+        #report-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
         tr:hover {
-            background-color: #f8fafc;
+            background-color: #edf2f7;
         }
 
         tr.row-zero {
@@ -253,6 +252,7 @@
         tr.row-total {
             background-color: #edf2f7 !important;
             font-weight: bold;
+            cursor: default !important;
         }
 
         tr.row-total td {
@@ -371,6 +371,109 @@
             background-color: #fafbfc;
         }
 
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 850px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .modal-header {
+            background-color: #00b14f;
+            color: white;
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        .modal-body th, .modal-body td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .modal-body th:nth-child(3),
+        .modal-body td:nth-child(3) {
+            text-align: right;
+        }
+
+        .modal-body th {
+            background-color: #f7fafc;
+            color: #2d3748;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+
+        .modal-footer {
+            padding: 14px 24px;
+            background-color: #f8fafc;
+            text-align: right;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-modal-close {
+            background-color: #718096;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-modal-close:hover {
+            background-color: #4a5568;
+        }
+
         @media (max-width: 768px) {
             .summary-cards, .category-cards {
                 grid-template-columns: repeat(2, 1fr);
@@ -379,18 +482,20 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+            .modal-content {
+                max-width: 100%;
+                margin: 10px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div id="full-capture-wrapper">
-
+    <!-- CONTAINER LAPORAN BULANAN -->
     <div class="container" id="capture-area">
-        <!-- Header -->
         <div class="header">
             <div class="header-left">
-                <!-- Navigasi & Backup/Restore JSON yang Lebih Rapi -->
                 <div class="nav-group">
                     <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
                     <button class="btn-nav-file1 btn-json" onclick="downloadJSON()">📥 Download JSON</button>
@@ -407,11 +512,10 @@
                     <input type="month" id="monthPicker" class="month-selector" value="2026-06">
                 </div>
                 <button id="btnSavePng" class="btn-action-control btn-save" title="Simpan laporan ke format PNG">Simpan PNG</button>
-                <button id="btnReset" class="btn-action-control btn-reset" title="Reset data bulan ini">Reset</button>
+                <button id="btnReset" class="btn-action-control btn-reset" title="Reset data bonus bulan ini">Reset</button>
             </div>
         </div>
 
-        <!-- Summary Cards -->
         <div class="summary-cards">
             <div class="card green">
                 <div class="card-title">Total Pemasukan</div>
@@ -432,8 +536,7 @@
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal</div>
+        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal (Tekan baris untuk lihat detail)</div>
         <div class="table-container">
             <table id="report-table">
                 <thead>
@@ -446,13 +549,10 @@
                         <th class="text-right">Persentase</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Baris tabel harian -->
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
 
-        <!-- Category Cards Bottom -->
         <div class="section-title">Rincian Kategori</div>
         <div class="category-cards">
             <div class="cat-card">
@@ -473,7 +573,6 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer" id="footer-text">
             Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
         </div>
@@ -501,9 +600,7 @@
                         <th class="text-right">Penghasilan Bersih</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Diisi otomatis oleh JavaScript -->
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
 
@@ -511,19 +608,36 @@
             Laporan Akumulasi Tahunan • 2026
         </div>
     </div>
+</div>
 
+<!-- Modal Detail Master Data -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Detail Master Data</h3>
+            <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <table id="modal-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Deskripsi</th>
+                        <th class="text-right">Nominal / Pemasukan</th>
+                    </tr>
+                </thead>
+                <tbody id="modal-table-body"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-close" onclick="closeDetailModal()">Tutup</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    const namaBulan = [
-        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", 
-        "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
-    ];
-
-    const namaBulanPanjang = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-    ];
+    const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const namaBulanPanjang = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
     function formatRupiah(angka) {
         return 'Rp ' + Number(angka).toLocaleString('id-ID');
@@ -629,6 +743,7 @@
             const data = dailyData[i - 1] || { trip: 0, pemasukan: 0, pengeluaran: 0 };
 
             const tr = document.createElement('tr');
+            tr.setAttribute('data-day', i);
             tr.innerHTML = `
                 <td>${tglStr}</td>
                 <td class="text-center" style="font-weight: bold; color: #3182ce;">${data.trip}</td>
@@ -642,6 +757,11 @@
                     </div>
                 </td>
             `;
+
+            tr.addEventListener('click', function() {
+                showDetailModal(i, year, monthIndex);
+            });
+
             tbody.appendChild(tr);
         }
 
@@ -654,6 +774,75 @@
         attachTableEvents();
         recalculate();
         generateYearlyReport(year);
+    }
+
+    function showDetailModal(day, year, monthIndex) {
+        const bulanNama = namaBulanPanjang[monthIndex];
+        const file1Key = getFile1StorageKey(bulanNama, year);
+        const rawData = localStorage.getItem(file1Key);
+
+        const modalTableBody = document.getElementById('modal-table-body');
+        modalTableBody.innerHTML = '';
+        document.getElementById('modalTitle').innerText = `Detail Master Data: Tanggal ${day} ${bulanNama} ${year}`;
+
+        let foundRows = 0;
+        if (rawData) {
+            try {
+                const parsedRows = JSON.parse(rawData);
+                let currentDayIndex = -1;
+
+                parsedRows.forEach(row => {
+                    const tanggalCol = row[0] ? row[0].trim() : "";
+                    const deskripsiCol = row[1] ? row[1].trim() : "";
+                    const deskripsiLower = deskripsiCol.toLowerCase();
+                    const pemasukanCol = row[2] ? row[2].trim() : "";
+                    const potonganCol = row[3] ? row[3].trim() : "";
+
+                    if (tanggalCol !== "") {
+                        const dayMatch = tanggalCol.match(/^(\d{1,2})/);
+                        if (dayMatch) {
+                            currentDayIndex = parseInt(dayMatch[1], 10) - 1;
+                        }
+                    }
+
+                    if (currentDayIndex === (day - 1)) {
+                        foundRows++;
+                        let nominalVal = pemasukanCol !== "" && pemasukanCol !== "Rp 0" ? pemasukanCol : potonganCol;
+                        let fontColorStyle = "";
+                        
+                        if (deskripsiLower === "argo kotor") {
+                            fontColorStyle = "color: #3182ce; font-weight: bold;";
+                        } else if (deskripsiLower === "potongan aplikasi") {
+                            fontColorStyle = "color: #e53e3e; font-weight: bold;";
+                        } else if (deskripsiLower === "bbm") {
+                            fontColorStyle = "color: #d97706; font-weight: bold;";
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${tanggalCol}</td>
+                            <td style="${fontColorStyle}">${deskripsiCol}</td>
+                            <td class="text-right" style="${fontColorStyle}">${nominalVal}</td>
+                        `;
+                        modalTableBody.appendChild(tr);
+                    }
+                });
+            } catch (e) {
+                console.error("Gagal membaca master data untuk modal:", e);
+            }
+        }
+
+        if (foundRows === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="3" class="text-center" style="padding: 20px; color: #718096; font-style: italic;">Tidak ada data aktivitas untuk tanggal ini.</td>`;
+            modalTableBody.appendChild(tr);
+        }
+
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').style.display = 'none';
     }
 
     function generateYearlyReport(year) {

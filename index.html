@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Lalamove Dinamis</title>
-    <!-- Google Fonts Inter untuk kesan modern -->
+    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -36,7 +36,6 @@
             box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
         }
 
-        /* Navigasi Atas yang Lebih Rapinya Terstruktur */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -90,7 +89,6 @@
             letter-spacing: -0.5px;
         }
 
-        /* Kontainer gabungan untuk filter dan tombol aksi */
         .controls-wrapper {
             display: flex;
             justify-content: space-between;
@@ -110,7 +108,7 @@
 
         .filter-bar select, .filter-bar input, table select {
             padding: 6px 10px;
-            font-size: 13px;
+            font-size: 14px;
             font-family: 'Inter', sans-serif;
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -120,30 +118,24 @@
             transition: all 0.2s ease;
         }
 
-        .filter-bar select:focus, .filter-bar input:focus, table select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(243, 112, 33, 0.15);
-        }
-
-        /* Warna Khusus untuk Dropdown & Teks Berdasarkan Pilihan */
         select.transaksi-select option[value="Argo kotor"],
         select.transaksi-select.color-argo-kotor,
         .text-argo-kotor {
-            color: #2563eb !important; /* Biru */
+            color: #2563eb !important;
             font-weight: 600;
         }
 
         select.transaksi-select option[value="Potongan aplikasi"],
         select.transaksi-select.color-potongan-aplikasi,
         .text-potongan-aplikasi {
-            color: #ef4444 !important; /* Merah */
+            color: #ef4444 !important;
             font-weight: 600;
         }
 
         select.transaksi-select option[value="Bbm"],
         select.transaksi-select.color-bbm,
         .text-bbm {
-            color: #f97316 !important; /* Oren Jingga */
+            color: #f97316 !important;
             font-weight: 600;
         }
 
@@ -156,7 +148,7 @@
             color: white;
             border: none;
             padding: 6px 14px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
@@ -168,7 +160,6 @@
         .btn:hover {
             background-color: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(243, 112, 33, 0.3);
         }
 
         .btn-delete {
@@ -182,8 +173,6 @@
         .btn-delete:hover {
             background-color: var(--danger);
             color: white;
-            transform: none;
-            box-shadow: none;
         }
 
         .table-responsive {
@@ -201,7 +190,7 @@
 
         th, td {
             padding: 8px 12px;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         th {
@@ -210,17 +199,12 @@
             font-weight: 600;
             border-bottom: 2px solid var(--border-color);
             text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
+            font-size: 14px;
         }
 
         td {
             border-bottom: 1px solid var(--border-color);
             color: var(--text-main);
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
         }
 
         tbody tr:hover {
@@ -235,18 +219,14 @@
             text-align: center;
         }
 
-        td[contenteditable="true"] {
-            transition: background-color 0.15s ease;
+        td.date-cell {
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        td[contenteditable="true"]:hover {
+        td.date-cell:hover {
             background-color: #fffbeb;
-        }
-
-        td[contenteditable="true"]:focus {
-            background-color: #fffbeb;
-            outline: 2px solid var(--primary);
-            border-radius: 4px;
         }
 
         #notification {
@@ -256,28 +236,25 @@
             font-weight: 500;
             color: #10b981;
             height: 12px;
-            transition: opacity 0.3s ease;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Tombol Navigasi & Backup/Restore JSON yang Dikelompokkan Rapi -->
         <div class="top-nav">
             <div class="nav-group">
-                <button class="btn-nav btn-json" onclick="downloadJSON()">踏 Download JSON</button>
-                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">豆 Upload JSON</button>
+                <button class="btn-nav btn-json" onclick="downloadJSON()">Download JSON</button>
+                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">Upload JSON</button>
                 <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
             </div>
             <div class="nav-group">
-                <a href="dashboard.html" class="btn-nav">投 Buka Laporan Ringkasan</a>
+                <a href="dashboard.html" class="btn-nav">Buka Laporan Ringkasan</a>
             </div>
         </div>
 
-        <h1 class="main-title" id="mainTitle">Master data Laporan Lalamove</h1>
+        <h1 class="main-title" id="mainTitle">Master Data Laporan Lalamove</h1>
         
-        <!-- Wrapper untuk Filter Bulan/Tahun di Kiri dan Tombol Tambah Baris di Kanan -->
         <div class="controls-wrapper">
             <div class="filter-bar">
                 <select id="selectBulan" onchange="changePeriod()">
@@ -313,7 +290,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Data dinamis dimuat via script -->
                 </tbody>
             </table>
         </div>
@@ -321,12 +297,18 @@
         <div id="notification"></div>
     </div>
 
+    <input type="date" id="hiddenDateInput" style="position: absolute; opacity: 0; pointer-events: none;" onchange="onDatePicked(this)">
+
     <script>
         const table = document.getElementById('laporanTable').getElementsByTagName('tbody')[0];
         const notification = document.getElementById('notification');
         const selectBulan = document.getElementById('selectBulan');
         const inputTahun = document.getElementById('inputTahun');
         const mainTitle = document.getElementById('mainTitle');
+        const hiddenDateInput = document.getElementById('hiddenDateInput');
+        
+        let activeDateCell = null;
+        let pressTimer = null;
 
         selectBulan.value = "Juni";
         inputTahun.value = "2026";
@@ -351,7 +333,7 @@
         }
 
         function updateTitle() {
-            mainTitle.innerText = `Master data Laporan Lalamove ${selectBulan.value} ${inputTahun.value}`;
+            mainTitle.innerText = `Master Data Laporan Lalamove ${selectBulan.value} ${inputTahun.value}`;
         }
 
         function renderTable(rowsData) {
@@ -369,13 +351,11 @@
             const row = selectElement.closest('tr');
             const currencyInputs = row.querySelectorAll('.currency-input');
             
-            // Hapus kelas warna lama dari select dan input nominal
             selectElement.classList.remove('color-argo-kotor', 'color-potongan-aplikasi', 'color-bbm');
             currencyInputs.forEach(input => {
                 input.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
             });
 
-            // Tambahkan kelas warna baru berdasarkan nilai dropdown yang dipilih
             const val = selectElement.value;
             let colorClass = '';
             if (val === 'Argo kotor') colorClass = 'color-argo-kotor';
@@ -402,7 +382,7 @@
             });
 
             newRow.innerHTML = `
-                <td contenteditable="true">${tanggal}</td>
+                <td class="date-cell" title="Klik untuk ubah, Tekan lama (hold) untuk hapus tanggal">${tanggal}</td>
                 <td>
                     <select class="transaksi-select" onchange="handleSelectChange(this)">
                         ${optionsHtml}
@@ -414,11 +394,73 @@
                 </td>
             `;
 
-            // Terapkan warna saat baris dimuat jika sudah ada pilihan jenis transaksinya
+            const cell = newRow.querySelector('.date-cell');
+            
+            cell.addEventListener('click', function(e) {
+                openCalendar(this);
+            });
+
+            cell.addEventListener('mousedown', function(e) {
+                startLongPress(this);
+            });
+            cell.addEventListener('touchstart', function(e) {
+                startLongPress(this);
+            });
+
+            cell.addEventListener('mouseup', cancelLongPress);
+            cell.addEventListener('mouseleave', cancelLongPress);
+            cell.addEventListener('touchend', cancelLongPress);
+            cell.addEventListener('touchmove', cancelLongPress);
+
             const selectEl = newRow.querySelector('.transaksi-select');
             if (jenisTransaksi) {
                 updateRowColors(selectEl);
             }
+        }
+
+        function startLongPress(cell) {
+            cancelLongPress();
+            pressTimer = setTimeout(function() {
+                if (cell.innerText.trim() !== "") {
+                    if (confirm("Apakah Anda ingin menghapus tanggal ini?")) {
+                        cell.innerText = "";
+                        saveTableData();
+                    }
+                }
+            }, 600);
+        }
+
+        function cancelLongPress() {
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        }
+
+        function openCalendar(cell) {
+            activeDateCell = cell;
+            if (typeof hiddenDateInput.showPicker === 'function') {
+                hiddenDateInput.showPicker();
+            } else {
+                hiddenDateInput.click();
+            }
+        }
+
+        function onDatePicked(input) {
+            if (!activeDateCell) return;
+            const val = input.value; 
+            if (val) {
+                const parts = val.split('-');
+                const year = parts[0].slice(-2);
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+                const monthIndex = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                
+                const formattedDate = `${day < 10 ? '0' + day : day} ${monthNames[monthIndex]} ${year}`;
+                activeDateCell.innerText = formattedDate;
+                saveTableData();
+            }
+            input.value = "";
         }
 
         function handleSelectChange(selectElement) {
