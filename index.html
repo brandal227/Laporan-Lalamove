@@ -125,6 +125,28 @@
             box-shadow: 0 0 0 3px rgba(243, 112, 33, 0.15);
         }
 
+        /* Warna Khusus untuk Dropdown & Teks Berdasarkan Pilihan */
+        select.transaksi-select option[value="Argo kotor"],
+        select.transaksi-select.color-argo-kotor,
+        .text-argo-kotor {
+            color: #2563eb !important; /* Biru */
+            font-weight: 600;
+        }
+
+        select.transaksi-select option[value="Potongan aplikasi"],
+        select.transaksi-select.color-potongan-aplikasi,
+        .text-potongan-aplikasi {
+            color: #ef4444 !important; /* Merah */
+            font-weight: 600;
+        }
+
+        select.transaksi-select option[value="Bbm"],
+        select.transaksi-select.color-bbm,
+        .text-bbm {
+            color: #f97316 !important; /* Oren Jingga */
+            font-weight: 600;
+        }
+
         .action-bar {
             display: flex;
         }
@@ -244,12 +266,12 @@
         <!-- Tombol Navigasi & Backup/Restore JSON yang Dikelompokkan Rapi -->
         <div class="top-nav">
             <div class="nav-group">
-                <button class="btn-nav btn-json" onclick="downloadJSON()">📥 Download JSON</button>
-                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
+                <button class="btn-nav btn-json" onclick="downloadJSON()">踏 Download JSON</button>
+                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">豆 Upload JSON</button>
                 <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
             </div>
             <div class="nav-group">
-                <a href="dashboard.html" class="btn-nav">📊 Buka Laporan Ringkasan</a>
+                <a href="dashboard.html" class="btn-nav">投 Buka Laporan Ringkasan</a>
             </div>
         </div>
 
@@ -285,9 +307,8 @@
                 <thead>
                     <tr>
                         <th>Tanggal</th>
-                        <th>Deskripsi</th>
-                        <th class="text-right">Pemasukan</th>
-                        <th class="text-right">Potongan Aplikasi</th>
+                        <th>Jenis Transaksi</th>
+                        <th class="text-right">Nominal</th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -311,16 +332,16 @@
         inputTahun.value = "2026";
 
         const defaultData = [
-            ["01 Des 25", "Argo kotor", "Rp 100,000.00", ""],
-            ["", "Argo kotor", "Rp 150,000.00", ""],
-            ["02 Des 25", "Argo kotor", "Rp 70,000.00", ""],
-            ["", "Potongan aplikasi", "", ""],
-            ["", "Argo kotor", "Rp 100,000.00", ""],
-            ["", "Potongan aplikasi", "", ""],
-            ["", "Argo kotor", "Rp 58,129.00", ""],
-            ["", "Potongan aplikasi", "", ""],
-            ["", "Bonus stiker", "Rp 200,000.00", ""],
-            ["", "Bbm", "", ""]
+            ["01 Des 25", "Argo kotor", "Rp 100,000.00"],
+            ["", "Argo kotor", "Rp 150,000.00"],
+            ["02 Des 25", "Argo kotor", "Rp 70,000.00"],
+            ["", "Potongan aplikasi", ""],
+            ["", "Argo kotor", "Rp 100,000.00"],
+            ["", "Potongan aplikasi", ""],
+            ["", "Argo kotor", "Rp 58,129.00"],
+            ["", "Potongan aplikasi", ""],
+            ["", "Bonus stiker", "Rp 200,000.00"],
+            ["", "Bbm", ""]
         ];
 
         function getStorageKey() {
@@ -336,34 +357,73 @@
         function renderTable(rowsData) {
             table.innerHTML = "";
             rowsData.forEach(rowData => {
-                insertRowToDOM(rowData[0], rowData[1], rowData[2], rowData[3]);
+                let nominalVal = rowData[2];
+                if ((!nominalVal || nominalVal === "") && rowData[3] && rowData[3] !== "") {
+                    nominalVal = rowData[3];
+                }
+                insertRowToDOM(rowData[0], rowData[1], nominalVal);
             });
         }
 
-        function insertRowToDOM(tanggal = "", deskripsi = "", pemasukan = "", potongan = "") {
+        function updateRowColors(selectElement) {
+            const row = selectElement.closest('tr');
+            const currencyInputs = row.querySelectorAll('.currency-input');
+            
+            // Hapus kelas warna lama dari select dan input nominal
+            selectElement.classList.remove('color-argo-kotor', 'color-potongan-aplikasi', 'color-bbm');
+            currencyInputs.forEach(input => {
+                input.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
+            });
+
+            // Tambahkan kelas warna baru berdasarkan nilai dropdown yang dipilih
+            const val = selectElement.value;
+            let colorClass = '';
+            if (val === 'Argo kotor') colorClass = 'color-argo-kotor';
+            else if (val === 'Potongan aplikasi') colorClass = 'color-potongan-aplikasi';
+            else if (val === 'Bbm') colorClass = 'color-bbm';
+
+            if (colorClass) {
+                selectElement.classList.add(colorClass);
+                currencyInputs.forEach(input => {
+                    input.classList.add(colorClass.replace('color-', 'text-'));
+                });
+            }
+        }
+
+        function insertRowToDOM(tanggal = "", jenisTransaksi = "", nominal = "") {
             const newRow = table.insertRow();
             
             const optionsList = ["Argo kotor", "Potongan aplikasi", "Bbm", "Bonus stiker"];
-            let optionsHtml = `<option value="" disabled ${!deskripsi ? 'selected' : ''}>Pilih Deskripsi</option>`;
+            let optionsHtml = `<option value="" disabled ${!jenisTransaksi ? 'selected' : ''}>Pilih Jenis Transaksi</option>`;
             
             optionsList.forEach(opt => {
-                const selected = (deskripsi === opt) ? 'selected' : '';
+                const selected = (jenisTransaksi === opt) ? 'selected' : '';
                 optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
             });
 
             newRow.innerHTML = `
                 <td contenteditable="true">${tanggal}</td>
                 <td>
-                    <select class="deskripsi-select" onchange="saveTableData()">
+                    <select class="transaksi-select" onchange="handleSelectChange(this)">
                         ${optionsHtml}
                     </select>
                 </td>
-                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${pemasukan}</td>
-                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${potongan}</td>
+                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${nominal}</td>
                 <td class="text-center">
                     <button class="btn btn-delete" onclick="deleteRow(this)">Hapus</button>
                 </td>
             `;
+
+            // Terapkan warna saat baris dimuat jika sudah ada pilihan jenis transaksinya
+            const selectEl = newRow.querySelector('.transaksi-select');
+            if (jenisTransaksi) {
+                updateRowColors(selectEl);
+            }
+        }
+
+        function handleSelectChange(selectElement) {
+            updateRowColors(selectElement);
+            saveTableData();
         }
 
         function loadTableData() {
@@ -387,7 +447,7 @@
         }
 
         function addRow() {
-            insertRowToDOM("", "", "", "");
+            insertRowToDOM("", "", "");
             saveTableData();
         }
 
@@ -428,13 +488,11 @@
                 const rowData = [];
                 const tanggalCell = row.querySelectorAll('td')[0];
                 const selectCell = row.querySelector('td select');
-                const pemasukanCell = row.querySelectorAll('td')[2];
-                const potonganCell = row.querySelectorAll('td')[3];
+                const nominalCell = row.querySelectorAll('td')[2];
 
                 rowData.push(tanggalCell.innerText);
                 rowData.push(selectCell ? selectCell.value : "");
-                rowData.push(pemasukanCell.innerText);
-                rowData.push(potonganCell.innerText);
+                rowData.push(nominalCell.innerText);
 
                 rowsData.push(rowData);
             });
