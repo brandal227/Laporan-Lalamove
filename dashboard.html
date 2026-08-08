@@ -568,7 +568,7 @@
                 <div class="cat-value" id="cat-potongan">Rp 0</div>
             </div>
             <div class="cat-card">
-                <div class="cat-title">BBM (Otomatis dari File 1)</div>
+                <div class="cat-title">BBM (Otomatis dari Master Data)</div>
                 <div class="cat-value" id="cat-bbm">Rp 0</div>
             </div>
         </div>
@@ -680,11 +680,11 @@
                 parsedRows.forEach(row => {
                     const tanggalCol = row[0] ? row[0].trim() : "";
                     const deskripsiCol = row[1] ? row[1].trim().toLowerCase() : "";
-                    const pemasukanStr = row[2] ? row[2].replace(/[^0-9]/g, '') : "";
-                    const potonganStr = row[3] ? row[3].replace(/[^0-9]/g, '') : "";
-
-                    const pemasukanVal = parseFloat(pemasukanStr) || 0;
-                    const potonganVal = parseFloat(potonganStr) || 0;
+                    
+                    // Baca nilai nominal baik dari row[2] atau row[3]
+                    const col2Val = row[2] ? parseFloat(row[2].replace(/[^0-9]/g, '')) || 0 : 0;
+                    const col3Val = row[3] ? parseFloat(row[3].replace(/[^0-9]/g, '')) || 0 : 0;
+                    const nominalVal = col2Val > 0 ? col2Val : col3Val;
 
                     if (tanggalCol !== "") {
                         const dayMatch = tanggalCol.match(/^(\d{1,2})/);
@@ -693,21 +693,22 @@
                         }
                     }
 
-                    if (deskripsiCol === "bbm") {
-                        totalBbmBulanIni += (pemasukanVal > 0 ? pemasukanVal : potonganVal);
+                    if (deskripsiCol.includes("bbm")) {
+                        totalBbmBulanIni += nominalVal;
                     } else if (currentDayIndex >= 0 && currentDayIndex < jumlahHari) {
-                        if (deskripsiCol === "argo kotor") {
+                        if (deskripsiCol.includes("argo kotor")) {
                             dailySummary[currentDayIndex].trip += 1;
-                            dailySummary[currentDayIndex].pemasukan += pemasukanVal;
-                        } else if (deskripsiCol === "potongan aplikasi") {
-                            dailySummary[currentDayIndex].pengeluaran += potonganVal;
-                        } else if (pemasukanVal > 0) {
-                            dailySummary[currentDayIndex].pemasukan += pemasukanVal;
+                            dailySummary[currentDayIndex].pemasukan += nominalVal;
+                        } else if (deskripsiCol.includes("potongan aplikasi")) {
+                            // Diperbaiki: menggunakan .includes() agar membaca "Potongan aplikasi" fleksibel
+                            dailySummary[currentDayIndex].pengeluaran += nominalVal;
+                        } else if (nominalVal > 0) {
+                            dailySummary[currentDayIndex].pemasukan += nominalVal;
                         }
                     }
                 });
             } catch (e) {
-                console.error("Gagal memparsing data File 1:", e);
+                console.error("Gagal memparsing data Master Data:", e);
             }
         }
         return { dailySummary, totalBbmBulanIni };
@@ -810,11 +811,11 @@
                         let nominalVal = pemasukanCol !== "" && pemasukanCol !== "Rp 0" ? pemasukanCol : potonganCol;
                         let fontColorStyle = "";
                         
-                        if (deskripsiLower === "argo kotor") {
+                        if (deskripsiLower.includes("argo kotor")) {
                             fontColorStyle = "color: #3182ce; font-weight: bold;";
-                        } else if (deskripsiLower === "potongan aplikasi") {
+                        } else if (deskripsiLower.includes("potongan aplikasi")) {
                             fontColorStyle = "color: #e53e3e; font-weight: bold;";
-                        } else if (deskripsiLower === "bbm") {
+                        } else if (deskripsiLower.includes("bbm")) {
                             fontColorStyle = "color: #d97706; font-weight: bold;";
                         }
 
@@ -1111,6 +1112,13 @@
         reader.readAsText(file);
         event.target.value = "";
     }
+
+    // Mengulangi pemuatan data secara otomatis saat pengguna beralih kembali ke tab dashboard
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            handleMonthChange();
+        }
+    });
 
     window.onload = function() {
         handleMonthChange();
