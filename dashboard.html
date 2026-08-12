@@ -770,7 +770,7 @@
 
         const keys = getCurrentStorageKeys();
         const savedBonus = loadSavedBonus(keys.bonus);
-        document.getElementById('cat-bonus').innerText = formatRupiah(savedBonus !== null ? savedBonus : 200000); 
+        document.getElementById('cat-bonus').innerText = formatRupiah(savedBonus !== null ? savedBonus : 0); 
 
         attachTableEvents();
         recalculate();
@@ -864,7 +864,7 @@
             const monthBbm = monthResult.totalBbmBulanIni;
 
             const boKey = getBonusStorageKey(year, m);
-            const monthBonus = loadSavedBonus(boKey) !== null ? loadSavedBonus(boKey) : 200000;
+            const monthBonus = loadSavedBonus(boKey) !== null ? loadSavedBonus(boKey) : 0;
 
             let mTrip = 0;
             let mPemasukanHarian = 0;
