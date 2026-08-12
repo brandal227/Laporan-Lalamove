@@ -16,7 +16,7 @@
 
         body {
             background-color: #f4f6f9;
-            padding: 20px;
+            padding: 15px;
             color: #333;
         }
 
@@ -45,6 +45,8 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            flex: 1;
+            min-width: 250px;
         }
 
         .header h1 {
@@ -207,27 +209,29 @@
         }
 
         .table-container {
-            padding: 0 20px;
+            padding: 0 20px 10px 20px;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
+            white-space: nowrap; /* Mencegah teks terpotong aneh di layar kecil sebelum digulir */
         }
 
         th {
             background-color: #f7fafc;
             color: #4a5568;
             text-align: left;
-            padding: 10px 4px; 
+            padding: 10px 6px; 
             border-bottom: 2px solid #e2e8f0;
             font-weight: bold;
         }
 
         td {
-            padding: 8px 4px; 
+            padding: 8px 6px; 
             border-bottom: 1px solid #edf2f7;
             color: #2d3748;
         }
@@ -382,7 +386,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
 
         .modal-content {
@@ -422,18 +426,18 @@
         }
 
         .modal-body {
-            padding: 24px;
+            padding: 20px;
             overflow-y: auto;
         }
 
         .modal-body table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .modal-body th, .modal-body td {
-            padding: 12px 14px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
             text-align: left;
         }
@@ -448,11 +452,11 @@
             color: #2d3748;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .modal-footer {
-            padding: 14px 24px;
+            padding: 12px 20px;
             background-color: #f8fafc;
             text-align: right;
             border-top: 1px solid #e2e8f0;
@@ -474,17 +478,55 @@
             background-color: #4a5568;
         }
 
+        /* RESPONSIVE DESIGN UNTUK MOBILE & TABLET */
         @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+
             .summary-cards, .category-cards {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+                padding: 10px 12px;
             }
+
             .header {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+                padding: 15px;
             }
+
+            .controls-group {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 5px;
+            }
+
+            .control-item {
+                flex: 1;
+            }
+
+            .month-selector {
+                width: 100%;
+            }
+
+            .btn-action-control {
+                flex: 1;
+            }
+
+            .section-title {
+                padding: 0 12px;
+                font-size: 13px;
+            }
+
+            .table-container {
+                padding: 0 12px 10px 12px;
+            }
+
             .modal-content {
                 max-width: 100%;
-                margin: 10px;
+                margin: 5px;
+                max-height: 95vh;
             }
         }
     </style>
@@ -681,7 +723,6 @@
                     const tanggalCol = row[0] ? row[0].trim() : "";
                     const deskripsiCol = row[1] ? row[1].trim().toLowerCase() : "";
                     
-                    // Baca nilai nominal baik dari row[2] atau row[3]
                     const col2Val = row[2] ? parseFloat(row[2].replace(/[^0-9]/g, '')) || 0 : 0;
                     const col3Val = row[3] ? parseFloat(row[3].replace(/[^0-9]/g, '')) || 0 : 0;
                     const nominalVal = col2Val > 0 ? col2Val : col3Val;
@@ -700,7 +741,6 @@
                             dailySummary[currentDayIndex].trip += 1;
                             dailySummary[currentDayIndex].pemasukan += nominalVal;
                         } else if (deskripsiCol.includes("potongan aplikasi")) {
-                            // Diperbaiki: menggunakan .includes() agar membaca "Potongan aplikasi" fleksibel
                             dailySummary[currentDayIndex].pengeluaran += nominalVal;
                         } else if (nominalVal > 0) {
                             dailySummary[currentDayIndex].pemasukan += nominalVal;
@@ -1113,7 +1153,6 @@
         event.target.value = "";
     }
 
-    // Mengulangi pemuatan data secara otomatis saat pengguna beralih kembali ke tab dashboard
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {
             handleMonthChange();

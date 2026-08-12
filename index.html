@@ -237,6 +237,74 @@
             color: #10b981;
             height: 12px;
         }
+
+        /* --- PENYESUAIAN RESPONSIF MOBILE & DESKTOP --- */
+        @media (max-width: 640px) {
+            body {
+                padding: 5px;
+            }
+
+            .container {
+                padding: 12px 10px;
+                border-radius: 8px;
+            }
+
+            h1.main-title {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .controls-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 8px 10px;
+            }
+
+            .filter-bar {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .filter-bar select {
+                flex: 1;
+            }
+
+            .action-bar {
+                width: 100%;
+            }
+
+            .action-bar button {
+                width: 100%;
+                text-align: center;
+                padding: 8px;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .nav-group .btn-nav {
+                flex: 1;
+                justify-content: center;
+            }
+
+            th, td {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .filter-bar select, .filter-bar input, table select {
+                font-size: 12px;
+                padding: 5px 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -508,6 +576,8 @@
             const STORAGE_KEY = getStorageKey();
             const rowsData = [];
             const rows = table.querySelectorAll('tr');
+
+            rows.rows?.forEach?.(row => {}); // Safe guard
 
             rows.forEach(row => {
                 const rowData = [];
