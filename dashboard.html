@@ -138,14 +138,6 @@
             height: 35px;
         }
 
-        .btn-reset {
-            background-color: #e53e3e;
-            color: white;
-        }
-        .btn-reset:hover {
-            background-color: #c53030;
-        }
-
         .btn-save {
             background-color: #3182ce;
             color: white;
@@ -218,7 +210,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
-            white-space: nowrap; /* Mencegah teks terpotong aneh di layar kecil sebelum digulir */
+            white-space: nowrap;
         }
 
         th {
@@ -478,7 +470,6 @@
             background-color: #4a5568;
         }
 
-        /* RESPONSIVE DESIGN UNTUK MOBILE & TABLET */
         @media (max-width: 768px) {
             body {
                 padding: 8px;
@@ -544,17 +535,16 @@
                     <button class="btn-nav-file1 btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
                     <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
                 </div>
-                <h1>Laporan Pendapatan Lalamove</h1>
-                <p id="header-periode">Periode: Juni 2026 • Dashboard Aktivitas Harian & Analisis Kinerja</p>
+                <h1>Pendapatan Order Bulanan</h1>
+                <p id="header-periode">Periode: Memuat... • Dashboard Aktivitas Harian & Analisis Kinerja</p>
             </div>
             
             <div class="controls-group">
                 <div class="control-item">
                     <label for="monthPicker">Ubah Bulan & Tahun:</label>
-                    <input type="month" id="monthPicker" class="month-selector" value="2026-06">
+                    <input type="month" id="monthPicker" class="month-selector">
                 </div>
                 <button id="btnSavePng" class="btn-action-control btn-save" title="Simpan laporan ke format PNG">Simpan PNG</button>
-                <button id="btnReset" class="btn-action-control btn-reset" title="Reset data bonus bulan ini">Reset</button>
             </div>
         </div>
 
@@ -616,7 +606,7 @@
         </div>
 
         <div class="footer" id="footer-text">
-            Laporan Keuangan Driver Lalamove • Juni 2026 • Format Satu Halaman
+            Laporan Keuangan Driver Lalamove • Format Satu Halaman
         </div>
     </div>
 
@@ -624,8 +614,8 @@
     <div class="container" id="capture-area-yearly">
         <div class="header" style="background-color: #2b6cb0;">
             <div>
-                <h1>Laporan Tahunan Pendapatan Lalamove</h1>
-                <p id="header-periode-yearly">Rekapitulasi Tahun: 2026</p>
+                <h1>Pendapatan Order Tahunan</h1>
+                <p id="header-periode-yearly">Rekapitulasi Tahun:</p>
             </div>
         </div>
 
@@ -647,7 +637,7 @@
         </div>
 
         <div class="footer" id="footer-text-yearly">
-            Laporan Akumulasi Tahunan • 2026
+            Laporan Akumulasi Tahunan
         </div>
     </div>
 </div>
@@ -765,8 +755,10 @@
         localStorage.setItem(keys.bonus, bonusVal);
 
         const pickerValue = document.getElementById('monthPicker').value;
-        const year = parseInt(pickerValue.split('-')[0]);
-        generateYearlyReport(year);
+        if (pickerValue) {
+            const year = parseInt(pickerValue.split('-')[0]);
+            generateYearlyReport(year);
+        }
     }
 
     function generateTableRows(year, monthIndex) {
@@ -970,7 +962,7 @@
         const totalTr = document.createElement('tr');
         totalTr.classList.add('row-total');
         totalTr.innerHTML = `
-            <td>JUMLAH TOTAL</td>
+            <td>TOTAL</td>
             <td class="text-center">${totalYearTrip} Order</td>
             <td class="text-right text-green">${formatRupiah(totalYearPemasukan)}</td>
             <td class="text-right text-red">${formatRupiah(totalYearPengeluaran)}</td>
@@ -1102,14 +1094,6 @@
         });
     });
 
-    document.getElementById('btnReset').addEventListener('click', function() {
-        if (confirm("Apakah Anda yakin ingin mereset bonus bulan ini?")) {
-            const keys = getCurrentStorageKeys();
-            localStorage.removeItem(keys.bonus);
-            handleMonthChange();
-        }
-    });
-
     function downloadJSON() {
         const exportData = {};
         for (let i = 0; i < localStorage.length; i++) {
@@ -1160,6 +1144,12 @@
     });
 
     window.onload = function() {
+        // Mengatur nilai bulan & tahun saat ini secara otomatis
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('monthPicker').value = `${year}-${month}`;
+
         handleMonthChange();
     };
 </script>

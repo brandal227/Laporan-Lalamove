@@ -106,7 +106,7 @@
             gap: 8px;
         }
 
-        .filter-bar select, .filter-bar input, table select {
+        .filter-bar select, .filter-bar input {
             padding: 6px 10px;
             font-size: 14px;
             font-family: 'Inter', sans-serif;
@@ -118,25 +118,43 @@
             transition: all 0.2s ease;
         }
 
-        select.transaksi-select option[value="Argo kotor"],
-        select.transaksi-select.color-argo-kotor,
+        /* Styling teks & warna untuk jenis transaksi tanpa border */
+        .transaksi-trigger {
+            cursor: pointer;
+            padding: 6px 4px;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            display: inline-block;
+            outline: none;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .transaksi-trigger:hover {
+            background-color: #f1f5f9;
+        }
+
         .text-argo-kotor {
             color: #2563eb !important;
             font-weight: 600;
         }
 
-        select.transaksi-select option[value="Potongan aplikasi"],
-        select.transaksi-select.color-potongan-aplikasi,
         .text-potongan-aplikasi {
             color: #ef4444 !important;
             font-weight: 600;
         }
 
-        select.transaksi-select option[value="Bbm"],
-        select.transaksi-select.color-bbm,
         .text-bbm {
             color: #f97316 !important;
             font-weight: 600;
+        }
+
+        .text-placeholder {
+            color: var(--text-muted);
+            font-style: italic;
         }
 
         .action-bar {
@@ -238,7 +256,71 @@
             height: 12px;
         }
 
-        /* --- PENYESUAIAN RESPONSIF MOBILE & DESKTOP --- */
+        /* Styling Modal / Popup Pilihan */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            width: 280px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: modalPop 0.2s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-option {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            color: var(--text-main);
+        }
+
+        .modal-option:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .modal-option.opt-argo-kotor { color: #2563eb; font-weight: 600; }
+        .modal-option.opt-potongan-aplikasi { color: #ef4444; font-weight: 600; }
+        .modal-option.opt-bbm { color: #f97316; font-weight: 600; }
+
         @media (max-width: 640px) {
             body {
                 padding: 5px;
@@ -300,7 +382,7 @@
                 font-size: 12px;
             }
 
-            .filter-bar select, .filter-bar input, table select {
+            .filter-bar select, .filter-bar input {
                 font-size: 12px;
                 padding: 5px 6px;
             }
@@ -365,7 +447,19 @@
         <div id="notification"></div>
     </div>
 
+    <!-- Hidden Date Input untuk Kalender -->
     <input type="date" id="hiddenDateInput" style="position: absolute; opacity: 0; pointer-events: none;" onchange="onDatePicked(this)">
+
+    <!-- Custom Popup / Modal Pilihan Transaksi -->
+    <div id="transactionModal" class="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <div class="modal-title">Pilih Jenis Transaksi</div>
+            <button class="modal-option opt-argo-kotor" onclick="selectTransaction('Argo kotor')">Argo kotor</button>
+            <button class="modal-option opt-potongan-aplikasi" onclick="selectTransaction('Potongan aplikasi')">Potongan aplikasi</button>
+            <button class="modal-option opt-bbm" onclick="selectTransaction('Bbm')">Bbm</button>
+            <button class="modal-option" onclick="selectTransaction('Bonus stiker')">Bonus stiker</button>
+        </div>
+    </div>
 
     <script>
         const table = document.getElementById('laporanTable').getElementsByTagName('tbody')[0];
@@ -374,12 +468,22 @@
         const inputTahun = document.getElementById('inputTahun');
         const mainTitle = document.getElementById('mainTitle');
         const hiddenDateInput = document.getElementById('hiddenDateInput');
+        const transactionModal = document.getElementById('transactionModal');
         
         let activeDateCell = null;
+        let activeTriggerButton = null;
         let pressTimer = null;
 
-        selectBulan.value = "Juni";
-        inputTahun.value = "2026";
+        // --- INISIALISASI OTOMATIS BULAN & TAHUN SAAT INI ---
+        function setOtomatisPeriodeSekarang() {
+            const namaBulan = [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const sekarang = new Date();
+            selectBulan.value = namaBulan[sekarang.getMonth()];
+            inputTahun.value = sekarang.getFullYear();
+        }
 
         function getStorageKey() {
             const bulan = selectBulan.value.toLowerCase();
@@ -402,46 +506,42 @@
             });
         }
 
-        function updateRowColors(selectElement) {
-            const row = selectElement.closest('tr');
-            const currencyInputs = row.querySelectorAll('.currency-input');
+        function updateRowColors(triggerEl, value) {
+            const row = triggerEl.closest('tr');
+            const currencyInput = row.querySelector('.currency-input');
             
-            selectElement.classList.remove('color-argo-kotor', 'color-potongan-aplikasi', 'color-bbm');
-            currencyInputs.forEach(input => {
-                input.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
-            });
+            triggerEl.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm', 'text-placeholder');
+            if (currencyInput) {
+                currencyInput.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
+            }
 
-            const val = selectElement.value;
+            if (!value) {
+                triggerEl.innerText = "Pilih Jenis Transaksi";
+                triggerEl.classList.add('text-placeholder');
+                return;
+            }
+
+            triggerEl.innerText = value;
             let colorClass = '';
-            if (val === 'Argo kotor') colorClass = 'color-argo-kotor';
-            else if (val === 'Potongan aplikasi') colorClass = 'color-potongan-aplikasi';
-            else if (val === 'Bbm') colorClass = 'color-bbm';
+            if (value === 'Argo kotor') colorClass = 'text-argo-kotor';
+            else if (value === 'Potongan aplikasi') colorClass = 'text-potongan-aplikasi';
+            else if (value === 'Bbm') colorClass = 'text-bbm';
 
             if (colorClass) {
-                selectElement.classList.add(colorClass);
-                currencyInputs.forEach(input => {
-                    input.classList.add(colorClass.replace('color-', 'text-'));
-                });
+                triggerEl.classList.add(colorClass);
+                if (currencyInput) {
+                    currencyInput.classList.add(colorClass);
+                }
             }
         }
 
         function insertRowToDOM(tanggal = "", jenisTransaksi = "", nominal = "") {
             const newRow = table.insertRow();
-            
-            const optionsList = ["Argo kotor", "Potongan aplikasi", "Bbm", "Bonus stiker"];
-            let optionsHtml = `<option value="" disabled ${!jenisTransaksi ? 'selected' : ''}>Pilih Jenis Transaksi</option>`;
-            
-            optionsList.forEach(opt => {
-                const selected = (jenisTransaksi === opt) ? 'selected' : '';
-                optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
-            });
 
             newRow.innerHTML = `
                 <td class="date-cell" title="Klik untuk ubah, Tekan lama (hold) untuk hapus tanggal">${tanggal}</td>
                 <td>
-                    <select class="transaksi-select" onchange="handleSelectChange(this)">
-                        ${optionsHtml}
-                    </select>
+                    <button type="button" class="transaksi-trigger" onclick="openModal(this)"></button>
                 </td>
                 <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${nominal}</td>
                 <td class="text-center">
@@ -450,27 +550,44 @@
             `;
 
             const cell = newRow.querySelector('.date-cell');
-            
             cell.addEventListener('click', function(e) {
                 openCalendar(this);
             });
 
-            cell.addEventListener('mousedown', function(e) {
-                startLongPress(this);
-            });
-            cell.addEventListener('touchstart', function(e) {
-                startLongPress(this);
-            });
-
+            cell.addEventListener('mousedown', function(e) { startLongPress(this); });
+            cell.addEventListener('touchstart', function(e) { startLongPress(this); });
             cell.addEventListener('mouseup', cancelLongPress);
             cell.addEventListener('mouseleave', cancelLongPress);
             cell.addEventListener('touchend', cancelLongPress);
             cell.addEventListener('touchmove', cancelLongPress);
 
-            const selectEl = newRow.querySelector('.transaksi-select');
-            if (jenisTransaksi) {
-                updateRowColors(selectEl);
+            const triggerEl = newRow.querySelector('.transaksi-trigger');
+            updateRowColors(triggerEl, jenisTransaksi);
+        }
+
+        // --- FUNGSI MODAL / POPUP PILIHAN ---
+        function openModal(triggerBtn) {
+            activeTriggerButton = triggerBtn;
+            transactionModal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            transactionModal.style.display = 'none';
+            activeTriggerButton = null;
+        }
+
+        function closeModalOutside(e) {
+            if (e.target === transactionModal) {
+                closeModal();
             }
+        }
+
+        function selectTransaction(value) {
+            if (activeTriggerButton) {
+                updateRowColors(activeTriggerButton, value);
+                saveTableData();
+            }
+            closeModal();
         }
 
         function startLongPress(cell) {
@@ -516,11 +633,6 @@
                 saveTableData();
             }
             input.value = "";
-        }
-
-        function handleSelectChange(selectElement) {
-            updateRowColors(selectElement);
-            saveTableData();
         }
 
         function loadTableData() {
@@ -577,16 +689,15 @@
             const rowsData = [];
             const rows = table.querySelectorAll('tr');
 
-            rows.rows?.forEach?.(row => {}); // Safe guard
-
             rows.forEach(row => {
                 const rowData = [];
                 const tanggalCell = row.querySelectorAll('td')[0];
-                const selectCell = row.querySelector('td select');
+                const triggerEl = row.querySelector('.transaksi-trigger');
                 const nominalCell = row.querySelectorAll('td')[2];
 
                 rowData.push(tanggalCell.innerText);
-                rowData.push(selectCell ? selectCell.value : "");
+                let jenisVal = (triggerEl && !triggerEl.classList.contains('text-placeholder')) ? triggerEl.innerText : "";
+                rowData.push(jenisVal);
                 rowData.push(nominalCell.innerText);
 
                 rowsData.push(rowData);
@@ -642,7 +753,11 @@
             event.target.value = "";
         }
 
-        window.onload = loadTableData;
+        // Jalankan saat halaman dimuat
+        window.onload = function() {
+            setOtomatisPeriodeSekarang();
+            loadTableData();
+        };
     </script>
 </body>
 </html>
