@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Lalamove Dinamis - Supabase</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #f37021;
+            --primary-hover: #d95e14;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 15px 10px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-nav {
+            background-color: #00b14f;
+            color: white;
+            text-decoration: none;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-nav:hover {
+            background-color: #009541;
+        }
+
+        .btn-json {
+            background-color: #3182ce;
+        }
+        .btn-json:hover {
+            background-color: #2b6cb0;
+        }
+
+        h1.main-title {
+            text-align: center;
+            color: var(--text-main);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-bar select, .filter-bar input {
+            padding: 6px 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .transaksi-trigger {
+            cursor: pointer;
+            padding: 6px 4px;
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: left;
+            display: inline-block;
+            outline: none;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .transaksi-trigger:hover {
+            background-color: #f1f5f9;
+        }
+
+        .text-argo-kotor { color: #2563eb !important; font-weight: 600; }
+        .text-potongan-aplikasi { color: #ef4444 !important; font-weight: 600; }
+        .text-bbm { color: #f97316 !important; font-weight: 600; }
+        .text-placeholder { color: var(--text-muted); font-style: italic; }
+
+        .action-bar { display: flex; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px -1px rgba(243, 112, 33, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        .btn-delete {
+            background-color: #fee2e2;
+            color: var(--danger);
+            padding: 4px 8px;
+            font-size: 11px;
+            box-shadow: none;
+        }
+        .btn-delete:hover { background-color: var(--danger); color: white; }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            text-align: left;
+        }
+
+        th, td { padding: 6px 8px; font-size: 14px; }
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        td { border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        tbody tr:hover { background-color: #fcfcfc; }
+
+        td.text-right, th.text-right { text-align: right; }
+        td.text-center, th.text-center { text-align: center; }
+        td.date-cell { cursor: pointer; user-select: none; }
+        td.date-cell:hover { background-color: #fffbeb; }
+
+        #notification {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #10b981;
+            height: 12px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: #ffffff; padding: 16px; border-radius: 12px;
+            width: 280px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .modal-title {
+            font-size: 13px; font-weight: 600; color: var(--text-muted);
+            margin-bottom: 4px; text-align: center; text-transform: uppercase;
+        }
+        .modal-option {
+            background: #f8fafc; border: 1px solid var(--border-color);
+            padding: 10px 14px; font-size: 14px; font-weight: 500;
+            border-radius: 8px; cursor: pointer; text-align: left; color: var(--text-main);
+        }
+        .modal-option:hover { background: #f1f5f9; }
+        .modal-option.opt-argo-kotor { color: #2563eb; font-weight: 600; }
+        .modal-option.opt-potongan-aplikasi { color: #ef4444; font-weight: 600; }
+        .modal-option.opt-bbm { color: #f97316; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="top-nav">
+            <div class="nav-group">
+                <button class="btn-nav btn-json" onclick="exportDataJSON()">Download JSON</button>
+                <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">Upload JSON</button>
+                <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="importDataJSON(event)">
+            </div>
+            <div class="nav-group">
+                <a href="dashboard.html" class="btn-nav">Buka Laporan Ringkasan</a>
+            </div>
+        </div>
+
+        <h1 class="main-title" id="mainTitle">Master Data Laporan Lalamove</h1>
+        
+        <div class="controls-wrapper">
+            <div class="filter-bar">
+                <select id="selectBulan" onchange="changePeriod()">
+                    <option value="januari">Januari</option>
+                    <option value="februari">Februari</option>
+                    <option value="maret">Maret</option>
+                    <option value="april">April</option>
+                    <option value="mei">Mei</option>
+                    <option value="juni">Juni</option>
+                    <option value="juli">Juli</option>
+                    <option value="agustus">Agustus</option>
+                    <option value="september">September</option>
+                    <option value="oktober">Oktober</option>
+                    <option value="november">November</option>
+                    <option value="desember">Desember</option>
+                </select>
+                <input type="number" id="inputTahun" value="2026" style="width: 80px;" onchange="changePeriod()">
+            </div>
+
+            <div class="action-bar">
+                <button class="btn" onclick="addRow()">+ Tambah Baris</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="laporanTable">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Jenis Transaksi</th>
+                        <th class="text-right">Nominal</th>
+                        <th class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="notification"></div>
+    </div>
+
+    <!-- Hidden Date Input -->
+    <input type="date" id="hiddenDateInput" style="position: absolute; opacity: 0; pointer-events: none;" onchange="onDatePicked(this)">
+
+    <!-- Custom Modal Transaksi -->
+    <div id="transactionModal" class="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <div class="modal-title">Pilih Jenis Transaksi</div>
+            <button class="modal-option opt-argo-kotor" onclick="selectTransaction('Argo kotor')">Argo kotor</button>
+            <button class="modal-option opt-potongan-aplikasi" onclick="selectTransaction('Potongan aplikasi')">Potongan aplikasi</button>
+            <button class="modal-option opt-bbm" onclick="selectTransaction('Bbm')">Bbm</button>
+        </div>
+    </div>
+
+    <script>
+        // INISIALISASI SUPABASE (Ganti dengan kredensial Anda)
+        const SUPABASE_URL = 'https://gmwtqpgzmnuquifttktz.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'sb_publishable_VKLcXrmGG2PnA0kdclzlEg_1rN4Pzq9';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const table = document.getElementById('laporanTable').getElementsByTagName('tbody')[0];
+        const notification = document.getElementById('notification');
+        const selectBulan = document.getElementById('selectBulan');
+        const inputTahun = document.getElementById('inputTahun');
+        const mainTitle = document.getElementById('mainTitle');
+        const hiddenDateInput = document.getElementById('hiddenDateInput');
+        const transactionModal = document.getElementById('transactionModal');
+        
+        let activeDateCell = null;
+        let activeTriggerButton = null;
+        let pressTimer = null;
+        let isSaving = false;
+
+        function setOtomatisPeriodeSekarang() {
+            const namaBulanKey = [
+                "januari", "februari", "maret", "april", "mei", "juni", 
+                "juli", "agustus", "september", "oktober", "november", "desember"
+            ];
+            const sekarang = new Date();
+            selectBulan.value = namaBulanKey[sekarang.getMonth()];
+            inputTahun.value = sekarang.getFullYear();
+        }
+
+        function updateTitle() {
+            const bulanKapital = selectBulan.value.charAt(0).toUpperCase() + selectBulan.value.slice(1);
+            mainTitle.innerText = `Master Data Laporan Lalamove ${bulanKapital} ${inputTahun.value}`;
+        }
+
+        function renderTable(rowsData) {
+            table.innerHTML = "";
+            rowsData.forEach(rowData => {
+                insertRowToDOM(rowData.tanggal || "", rowData.jenis_transaksi || "", rowData.nominal ? "Rp " + Number(rowData.nominal).toLocaleString('id-ID') : "");
+            });
+        }
+
+        function updateRowColors(triggerEl, value) {
+            const row = triggerEl.closest('tr');
+            const currencyInput = row.querySelector('.currency-input');
+            
+            triggerEl.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm', 'text-placeholder');
+            if (currencyInput) currencyInput.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
+
+            if (!value) {
+                triggerEl.innerText = "Pilih Jenis Transaksi";
+                triggerEl.classList.add('text-placeholder');
+                return;
+            }
+
+            triggerEl.innerText = value;
+            let colorClass = '';
+            if (value === 'Argo kotor') colorClass = 'text-argo-kotor';
+            else if (value === 'Potongan aplikasi') colorClass = 'text-potongan-aplikasi';
+            else if (value === 'Bbm') colorClass = 'text-bbm';
+
+            if (colorClass) {
+                triggerEl.classList.add(colorClass);
+                if (currencyInput) currencyInput.classList.add(colorClass);
+            }
+        }
+
+        function insertRowToDOM(tanggal = "", jenisTransaksi = "", nominal = "") {
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td class="date-cell" title="Klik untuk ubah">${tanggal}</td>
+                <td><button type="button" class="transaksi-trigger" onclick="openModal(this)"></button></td>
+                <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${nominal}</td>
+                <td class="text-center"><button class="btn btn-delete" onclick="deleteRow(this)">Hapus</button></td>
+            `;
+
+            const cell = newRow.querySelector('.date-cell');
+            cell.addEventListener('click', () => openCalendar(cell));
+
+            const triggerEl = newRow.querySelector('.transaksi-trigger');
+            updateRowColors(triggerEl, jenisTransaksi);
+        }
+
+        function openModal(triggerBtn) {
+            activeTriggerButton = triggerBtn;
+            transactionModal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            transactionModal.style.display = 'none';
+            activeTriggerButton = null;
+        }
+
+        function closeModalOutside(e) {
+            if (e.target === transactionModal) closeModal();
+        }
+
+        function selectTransaction(value) {
+            if (activeTriggerButton) {
+                updateRowColors(activeTriggerButton, value);
+                saveTableData();
+            }
+            closeModal();
+        }
+
+        function openCalendar(cell) {
+            activeDateCell = cell;
+            if (typeof hiddenDateInput.showPicker === 'function') hiddenDateInput.showPicker();
+            else hiddenDateInput.click();
+        }
+
+        function onDatePicked(input) {
+            if (!activeDateCell) return;
+            const val = input.value; 
+            if (val) {
+                const parts = val.split('-');
+                const year = parts[0].slice(-2);
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+                const formattedDate = `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]} ${year}`;
+                activeDateCell.innerText = formattedDate;
+                saveTableData();
+            }
+            input.value = "";
+        }
+
+        async function loadTableData() {
+            updateTitle();
+            const bulan = selectBulan.value.toLowerCase();
+            const tahun = inputTahun.value;
+
+            const { data, error } = await _supabase
+                .from('laporan_lalamove')
+                .select('*')
+                .eq('bulan', bulan)
+                .eq('tahun', tahun)
+                .order('id', { ascending: true });
+
+            if (error) {
+                console.error('Gagal mengambil data:', error);
+                return;
+            }
+            renderTable(data || []);
+        }
+
+        function changePeriod() {
+            loadTableData();
+        }
+
+        function addRow() {
+            insertRowToDOM("", "", "");
+            saveTableData();
+        }
+
+        async function deleteRow(button) {
+            button.closest('tr').remove();
+            await saveTableData();
+        }
+
+        document.getElementById('laporanTable').addEventListener('input', function(e) {
+            if (e.target.classList.contains('currency-input')) {
+                let el = e.target;
+                let value = el.innerText.replace(/[^0-9]/g, '');
+                el.innerText = value === "" ? "" : "Rp " + Number(value).toLocaleString('id-ID');
+                
+                let range = document.createRange(), sel = window.getSelection();
+                range.selectNodeContents(el); range.collapse(false);
+                sel.removeAllRanges(); sel.addRange(range);
+            }
+            saveTableData();
+        });
+
+        // Sinkronisasi Simpan ke Supabase
+        async function saveTableData() {
+            if (isSaving) return;
+            isSaving = true;
+
+            const bulan = selectBulan.value.toLowerCase();
+            const tahun = inputTahun.value;
+
+            // Hapus data lama bulan ini di server, lalu insert ulang data terupdate
+            await _supabase.from('laporan_lalamove').delete().eq('bulan', bulan).eq('tahun', tahun);
+
+            const rows = table.querySelectorAll('tr');
+            const dataToInsert = [];
+
+            rows.forEach(row => {
+                const tanggal = row.querySelectorAll('td')[0].innerText.trim();
+                const triggerEl = row.querySelector('.transaksi-trigger');
+                const jenis_transaksi = (triggerEl && !triggerEl.classList.contains('text-placeholder')) ? triggerEl.innerText.trim() : "";
+                const nominalText = row.querySelectorAll('td')[2].innerText;
+                const nominal = parseFloat(nominalText.replace(/[^0-9]/g, '')) || 0;
+
+                if (tanggal || jenis_transaksi || nominal > 0) {
+                    dataToInsert.push({ bulan, tahun, tanggal, jenis_transaksi, nominal });
+                }
+            });
+
+            if (dataToInsert.length > 0) {
+                const { error } = await _supabase.from('laporan_lalamove').insert(dataToInsert);
+                if (error) console.error('Gagal menyimpan ke Supabase:', error);
+            }
+
+            notification.innerText = "Tersimpan ke Supabase...";
+            setTimeout(() => { notification.innerText = ""; }, 1500);
+            isSaving = false;
+        }
+
+        async function exportDataJSON() {
+            const { data, error } = await _supabase.from('laporan_lalamove').select('*');
+            if (error) { alert("Gagal mengambil data export"); return; }
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_laporan_lalamove.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        async function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        // Bersihkan id lokal agar supabase membuat ID baru secara auto-increment
+                        const cleanedData = importedData.map(({ id, created_at, ...rest }) => rest);
+                        const { error } = await _supabase.from('laporan_lalamove').insert(cleanedData);
+                        if (error) throw error;
+                        alert("Data JSON berhasil diimpor ke Supabase!");
+                        loadTableData();
+                    } else {
+                        alert("Format struktur JSON tidak sesuai!");
+                    }
+                } catch (error) {
+                    alert("Gagal membaca file JSON!");
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
+        window.onload = function() {
+            setOtomatisPeriodeSekarang();
+            loadTableData();
+        };
+    </script>
+</body>
+</html>
