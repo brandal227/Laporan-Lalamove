@@ -533,19 +533,71 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) {
-                        // Bersihkan id lokal agar supabase membuat ID baru secara auto-increment
-                        const cleanedData = importedData.map(({ id, created_at, ...rest }) => rest);
+                    const rawData = JSON.parse(e.target.result);
+                    let cleanedData = [];
+
+                    if (Array.isArray(rawData)) {
+                        // Format standar (hasil export Supabase baru)
+                        cleanedData = rawData.map(({ id, created_at, ...rest }) => rest);
+                    } else if (typeof rawData === 'object' && rawData !== null) {
+                        // Format backup lama (seperti backup_lalamove_September_2026.json)
+                        for (const [key, value] of Object.entries(rawData)) {
+                            if (key.startsWith('laporan_lalamove_')) {
+                                const bulan = key.replace('laporan_lalamove_', '');
+                                const tahun = inputTahun.value;
+                                
+                                let rows = [];
+                                try {
+                                    rows = typeof value === 'string' ? JSON.parse(value) : value;
+                                } catch (err) {
+                                    console.error(`Gagal parsing string untuk ${key}`, err);
+                                    continue;
+                                }
+
+                                if (Array.isArray(rows)) {
+                                    let lastValidDate = "";
+                                    rows.forEach(row => {
+                                        const tanggalCol = row[0] ? row[0].trim() : "";
+                                        if (tanggalCol) lastValidDate = tanggalCol;
+                                        
+                                        const jenis_transaksi = row[1] ? row[1].trim() : "";
+                                        
+                                        let nominalStr = "";
+                                        if (row[2] && row[2].includes("Rp")) {
+                                            nominalStr = row[2];
+                                        } else if (row[3] && row[3].includes("Rp")) {
+                                            nominalStr = row[3];
+                                        } else if (row[2]) {
+                                            nominalStr = row[2];
+                                        }
+
+                                        const nominal = parseFloat(nominalStr.replace(/[^0-9]/g, '')) || 0;
+
+                                        if (lastValidDate || jenis_transaksi || nominal > 0) {
+                                            cleanedData.push({
+                                                bulan: bulan.toLowerCase(),
+                                                tahun: String(tahun),
+                                                tanggal: lastValidDate,
+                                                jenis_transaksi: jenis_transaksi,
+                                                nominal: nominal
+                                            });
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    if (cleanedData.length > 0) {
                         const { error } = await _supabase.from('laporan_lalamove').insert(cleanedData);
                         if (error) throw error;
                         alert("Data JSON berhasil diimpor ke Supabase!");
                         loadTableData();
                     } else {
-                        alert("Format struktur JSON tidak sesuai!");
+                        alert("Tidak ada data transaksi valid yang ditemukan dalam file JSON!");
                     }
                 } catch (error) {
-                    alert("Gagal membaca file JSON!");
+                    alert("Gagal membaca atau memproses file JSON!");
                     console.error(error);
                 }
             };
