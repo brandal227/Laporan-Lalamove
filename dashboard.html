@@ -87,6 +87,7 @@
 <body>
 
 <div id="full-capture-wrapper">
+    <!-- Kontainer Laporan Bulanan -->
     <div class="container" id="capture-area">
         <div class="header">
             <div class="header-left">
@@ -144,6 +145,7 @@
         <div class="footer" id="footer-text">Laporan Keuangan Driver Lalamove • Format Satu Halaman</div>
     </div>
 
+    <!-- Kontainer Laporan Tahunan (Hanya ada 1 bagian di sini) -->
     <div class="container" id="capture-area-yearly">
         <div class="header" style="background-color: #2b6cb0;">
             <div>
@@ -268,9 +270,6 @@
             storage_key: `lalamove_bonus_${pickerValue}`,
             data: bonusVal
         }, { onConflict: 'storage_key' });
-
-        const year = parseInt(pickerValue.split('-')[0]);
-        await generateYearlyReport(year);
     }
 
     async function generateTableRows(year, monthIndex) {
@@ -307,6 +306,8 @@
 
         attachTableEvents();
         recalculate();
+        
+        // Panggilan Rekapitulasi Tahunan dilakukan SATU KALI di sini setelah data bulanan dimuat
         await generateYearlyReport(year);
     }
 
@@ -355,6 +356,7 @@
 
     async function generateYearlyReport(year) {
         const tbodyYearly = document.querySelector('#yearly-table tbody');
+        if (!tbodyYearly) return;
         tbodyYearly.innerHTML = '';
 
         let totalYearTrip = 0, totalYearPemasukan = 0, totalYearPengeluaran = 0, totalYearBbm = 0, totalYearBersih = 0;
