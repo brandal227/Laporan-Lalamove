@@ -207,7 +207,7 @@
         }
 
         th, td {
-            padding: 8px 12px;
+            padding: 2px 5px;
             font-size: 14px;
         }
 
@@ -394,6 +394,7 @@
     <div class="container">
         <div class="top-nav">
             <div class="nav-group">
+                <!-- Tombol Download & Upload JSON disesuaikan untuk MongoDB Atlas jika diperlukan atau dihilangkan/disesuaikan -->
                 <button class="btn-nav btn-json" onclick="downloadJSON()">Download JSON</button>
                 <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">Upload JSON</button>
                 <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
@@ -457,7 +458,6 @@
             <button class="modal-option opt-argo-kotor" onclick="selectTransaction('Argo kotor')">Argo kotor</button>
             <button class="modal-option opt-potongan-aplikasi" onclick="selectTransaction('Potongan aplikasi')">Potongan aplikasi</button>
             <button class="modal-option opt-bbm" onclick="selectTransaction('Bbm')">Bbm</button>
-            <button class="modal-option" onclick="selectTransaction('Bonus stiker')">Bonus stiker</button>
         </div>
     </div>
 
@@ -635,14 +635,22 @@
             input.value = "";
         }
 
-        function loadTableData() {
+        // --- LOAD DATA DARI SERVER MONGODB ATLAS ---
+        async function loadTableData() {
             updateTitle();
             const STORAGE_KEY = getStorageKey();
-            const savedData = localStorage.getItem(STORAGE_KEY);
             
-            if (savedData) {
-                renderTable(JSON.parse(savedData));
-            } else {
+            try {
+                const response = await fetch(`/api/laporan/${STORAGE_KEY}`);
+                const result = await response.json();
+                
+                if (result.sukses && result.data) {
+                    renderTable(result.data);
+                } else {
+                    renderTable([]);
+                }
+            } catch (error) {
+                console.error("Gagal memuat data dari server:", error);
                 renderTable([]);
             }
         }
@@ -684,7 +692,8 @@
             saveTableData();
         });
 
-        function saveTableData() {
+        // --- SIMPAN DATA KE SERVER MONGODB ATLAS ---
+        async function saveTableData() {
             const STORAGE_KEY = getStorageKey();
             const rowsData = [];
             const rows = table.querySelectorAll('tr');
@@ -703,22 +712,49 @@
                 rowsData.push(rowData);
             });
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(rowsData));
-            
-            notification.innerText = "Perubahan tersimpan otomatis...";
+            notification.innerText = "Menyimpan ke Database...";
+
+            try {
+                const response = await fetch('/api/laporan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ storageKey: STORAGE_KEY, data: rowsData })
+                });
+                const result = await response.json();
+
+                if (result.sukses) {
+                    notification.innerText = "Tersimpan di MongoDB Atlas!";
+                } else {
+                    notification.innerText = "Gagal menyimpan!";
+                }
+            } catch (error) {
+                console.error("Error saving data:", error);
+                notification.innerText = "Koneksi server terputus!";
+            }
+
             setTimeout(() => {
                 notification.innerText = "";
             }, 1500);
         }
 
         function downloadJSON() {
+            // Fungsi opsional untuk backup lokal jika masih dibutuhkan
             const exportData = {};
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('laporan_lalamove_') || key.startsWith('lalamove_bonus_')) {
-                    exportData[key] = localStorage.getItem(key);
-                }
-            }
+            // Bisa disesuaikan mengambil dari state tabel saat ini jika diperlukan
+            const rowsData = [];
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const rowData = [];
+                const tanggalCell = row.querySelectorAll('td')[0];
+                const triggerEl = row.querySelector('.transaksi-trigger');
+                const nominalCell = row.querySelectorAll('td')[2];
+                rowData.push(tanggalCell.innerText);
+                let jenisVal = (triggerEl && !triggerEl.classList.contains('text-placeholder')) ? triggerEl.innerText : "";
+                rowData.push(jenisVal);
+                rowData.push(nominalCell.innerText);
+                rowsData.push(rowData);
+            });
+            exportData[getStorageKey()] = JSON.stringify(rowsData);
 
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
             const downloadAnchor = document.createElement('a');
@@ -737,13 +773,8 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    for (const key in importedData) {
-                        if (importedData.hasOwnProperty(key)) {
-                            localStorage.setItem(key, importedData[key]);
-                        }
-                    }
-                    alert("Data JSON berhasil di-upload dan dipulihkan!");
-                    loadTableData();
+                    // Ambil key pertama atau sesuai key aktif untuk di-upload ke server jika diinginkan
+                    alert("File JSON berhasil dibaca. Fitur upload file dapat disesuaikan dengan endpoint server MongoDB Atlas.");
                 } catch (error) {
                     alert("Format file JSON tidak valid!");
                     console.error(error);

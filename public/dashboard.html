@@ -217,13 +217,13 @@
             background-color: #f7fafc;
             color: #4a5568;
             text-align: left;
-            padding: 10px 6px; 
+            padding: 8px 6px; 
             border-bottom: 2px solid #e2e8f0;
             font-weight: bold;
         }
 
         td {
-            padding: 8px 6px; 
+            padding: 6px 6px; 
             border-bottom: 1px solid #edf2f7;
             color: #2d3748;
         }
@@ -691,11 +691,11 @@
         };
     }
 
-    function loadSavedDataAndBbm(year, monthIndex) {
+    // Mengambil data Master Data dari Server MongoDB
+    async function loadSavedDataAndBbmAsync(year, monthIndex) {
         const bulanNama = namaBulanPanjang[monthIndex];
         const file1Key = getFile1StorageKey(bulanNama, year);
-        const rawData = localStorage.getItem(file1Key);
-
+        
         const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
         let dailySummary = [];
         for (let i = 0; i < jumlahHari; i++) {
@@ -704,9 +704,12 @@
 
         let totalBbmBulanIni = 0;
 
-        if (rawData) {
-            try {
-                const parsedRows = JSON.parse(rawData);
+        try {
+            const response = await fetch(`/api/laporan/${file1Key}`);
+            const result = await response.json();
+
+            if (result.sukses && result.data) {
+                const parsedRows = result.data;
                 let currentDayIndex = -1;
 
                 parsedRows.forEach(row => {
@@ -737,10 +740,11 @@
                         }
                     }
                 });
-            } catch (e) {
-                console.error("Gagal memparsing data Master Data:", e);
             }
+        } catch (error) {
+            console.error("Gagal memuat master data:", error);
         }
+
         return { dailySummary, totalBbmBulanIni };
     }
 
@@ -749,26 +753,36 @@
         return saved !== null ? parseFloat(saved) : null;
     }
 
-    function saveData() {
+    // Menyimpan nilai bonus ke Server MongoDB
+    async function saveDataAsync() {
         const keys = getCurrentStorageKeys();
         const bonusVal = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
-        localStorage.setItem(keys.bonus, bonusVal);
+        
+        try {
+            await fetch('/api/laporan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ storageKey: keys.bonus, data: bonusVal })
+            });
+        } catch (error) {
+            console.error("Gagal menyimpan bonus:", error);
+        }
 
         const pickerValue = document.getElementById('monthPicker').value;
         if (pickerValue) {
             const year = parseInt(pickerValue.split('-')[0]);
-            generateYearlyReport(year);
+            await generateYearlyReportAsync(year);
         }
     }
 
-    function generateTableRows(year, monthIndex) {
+    async function generateTableRows(year, monthIndex) {
         const tbody = document.querySelector('#report-table tbody');
         tbody.innerHTML = '';
         
         const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
         const formatTahun = String(year).slice(-2);
         
-        const resultData = loadSavedDataAndBbm(year, monthIndex);
+        const resultData = await loadSavedDataAndBbmAsync(year, monthIndex);
         const dailyData = resultData.dailySummary;
 
         for (let i = 1; i <= jumlahHari; i++) {
@@ -806,22 +820,26 @@
 
         attachTableEvents();
         recalculate();
-        generateYearlyReport(year);
+        await generateYearlyReportAsync(year);
     }
 
-    function showDetailModal(day, year, monthIndex) {
+    async function showDetailModal(day, year, monthIndex) {
         const bulanNama = namaBulanPanjang[monthIndex];
         const file1Key = getFile1StorageKey(bulanNama, year);
-        const rawData = localStorage.getItem(file1Key);
 
         const modalTableBody = document.getElementById('modal-table-body');
-        modalTableBody.innerHTML = '';
+        modalTableBody.innerHTML = '<tr><td colspan="3" class="text-center" style="padding: 20px; color: #718096;">Memuat detail...</td></tr>';
         document.getElementById('modalTitle').innerText = `Detail Master Data: Tanggal ${day} ${bulanNama} ${year}`;
+        document.getElementById('detailModal').style.display = 'flex';
 
         let foundRows = 0;
-        if (rawData) {
-            try {
-                const parsedRows = JSON.parse(rawData);
+        try {
+            const response = await fetch(`/api/laporan/${file1Key}`);
+            const result = await response.json();
+
+            modalTableBody.innerHTML = '';
+            if (result.sukses && result.data) {
+                const parsedRows = result.data;
                 let currentDayIndex = -1;
 
                 parsedRows.forEach(row => {
@@ -860,25 +878,21 @@
                         modalTableBody.appendChild(tr);
                     }
                 });
-            } catch (e) {
-                console.error("Gagal membaca master data untuk modal:", e);
             }
+        } catch (e) {
+            console.error("Gagal membaca master data untuk modal:", e);
         }
 
         if (foundRows === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="3" class="text-center" style="padding: 20px; color: #718096; font-style: italic;">Tidak ada data aktivitas untuk tanggal ini.</td>`;
-            modalTableBody.appendChild(tr);
+            modalTableBody.innerHTML = `<tr><td colspan="3" class="text-center" style="padding: 20px; color: #718096; font-style: italic;">Tidak ada data aktivitas untuk tanggal ini.</td></tr>`;
         }
-
-        document.getElementById('detailModal').style.display = 'flex';
     }
 
     function closeDetailModal() {
         document.getElementById('detailModal').style.display = 'none';
     }
 
-    function generateYearlyReport(year) {
+    async function generateYearlyReportAsync(year) {
         const tbodyYearly = document.querySelector('#yearly-table tbody');
         tbodyYearly.innerHTML = '';
 
@@ -891,7 +905,7 @@
         let monthlyBersihData = [];
 
         for (let m = 0; m < 12; m++) {
-            const monthResult = loadSavedDataAndBbm(year, m);
+            const monthResult = await loadSavedDataAndBbmAsync(year, m);
             const monthData = monthResult.dailySummary;
             const monthBbm = monthResult.totalBbmBulanIni;
 
@@ -1045,7 +1059,7 @@
             }
         });
 
-        saveData();
+        saveDataAsync();
     }
 
     function attachTableEvents() {
@@ -1060,7 +1074,7 @@
         });
     }
 
-    function handleMonthChange() {
+    async function handleMonthChange() {
         const pickerValue = document.getElementById('monthPicker').value;
         if (!pickerValue) return;
 
@@ -1068,7 +1082,7 @@
         const year = parseInt(yearStr);
         const monthIndex = parseInt(monthStr) - 1;
 
-        generateTableRows(year, monthIndex);
+        await generateTableRows(year, monthIndex);
 
         const teksPeriode = `${namaBulanPanjang[monthIndex]} ${year}`;
         document.getElementById('header-periode').innerText = `Periode: ${teksPeriode} • Dashboard Aktivitas Harian & Analisis Kinerja`;
@@ -1118,7 +1132,7 @@
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
                 for (const key in importedData) {
@@ -1127,7 +1141,7 @@
                     }
                 }
                 alert("Data JSON berhasil di-upload dan dipulihkan!");
-                handleMonthChange();
+                await handleMonthChange();
             } catch (error) {
                 alert("Format file JSON tidak valid!");
                 console.error(error);
@@ -1137,20 +1151,19 @@
         event.target.value = "";
     }
 
-    document.addEventListener('visibilitychange', function() {
+    document.addEventListener('visibilitychange', async function() {
         if (!document.hidden) {
-            handleMonthChange();
+            await handleMonthChange();
         }
     });
 
-    window.onload = function() {
-        // Mengatur nilai bulan & tahun saat ini secara otomatis
+    window.onload = async function() {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('monthPicker').value = `${year}-${month}`;
 
-        handleMonthChange();
+        await handleMonthChange();
     };
 </script>
 
