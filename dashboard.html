@@ -10,43 +10,61 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        body { background-color: #f4f6f9; padding: 15px; color: #333; }
-        .container { max-width: 900px; margin: 0 auto 20px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
-        .header { background-color: #00b14f; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        body { background-color: #f4f6f9; padding: 0; margin: 0; color: #333; width: 100%; overflow-x: hidden; }
+        
+        /* Kontainer wrapper full-width */
+        #full-capture-wrapper { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+        
+        /* Container utama full width */
+        .container { width: 100% !important; max-width: 100% !important; margin: 0 0 20px 0 !important; background: #ffffff; border: none; border-bottom: 1px solid #e2e8f0; border-radius: 0 !important; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02); }
+        
+        /* Tab Navigasi Utama */
+        .main-tab-bar { background-color: #1a202c; padding: 12px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 3px solid #00b14f; flex-wrap: wrap; }
+        .tab-btn { background-color: #2d3748; color: #a0aec0; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+        .tab-btn:hover { background-color: #4a5568; color: white; }
+        .tab-btn.active { background-color: #00b14f; color: white; }
+
+        /* Sistem Tampilan Tab Content */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .header { background-color: #00b14f; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; width: 100%; }
+        .header.yearly-header { background-color: #2b6cb0; }
         .header-left { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 250px; }
         .header h1 { font-size: 22px; margin-bottom: 2px; }
         .header p { font-size: 13px; opacity: 0.9; }
         .nav-group { display: flex; gap: 6px; flex-wrap: wrap; }
         .btn-nav-file1 { background-color: #f37021; color: white; text-decoration: none; padding: 7px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; border: none; cursor: pointer; }
         .btn-nav-file1:hover { background-color: #d95e14; }
-        .btn-json { background-color: #3182ce; }
-        .btn-json:hover { background-color: #2b6cb0; }
         .controls-group { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
         .control-item { display: flex; flex-direction: column; gap: 3px; }
         .control-item label { font-size: 11px; font-weight: bold; opacity: 0.9; }
-        .month-selector { background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.4); color: white; font-size: 13px; font-weight: bold; cursor: pointer; outline: none; }
+        .month-selector, .year-selector { background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.4); color: white; font-size: 13px; font-weight: bold; cursor: pointer; outline: none; }
+        .month-selector option, .year-selector option { color: #333; background: #fff; }
         .month-selector::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         .btn-action-control { border: none; padding: 9px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; height: 35px; }
         .btn-save { background-color: #3182ce; color: white; }
         .btn-save:hover { background-color: #2b6cb0; }
-        .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px 20px; background-color: #fdfdfd; }
-        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; border-left-width: 3px; }
+        
+        .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 20px; background-color: #fdfdfd; width: 100%; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; border-left-width: 4px; }
         .card.green { border-left-color: #00b14f; }
         .card.red { border-left-color: #e53e3e; }
         .card.blue { border-left-color: #3182ce; }
         .card.orange { border-left-color: #dd6b20; }
-        .card-title { font-size: 9px; color: #718096; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-        .card-value { font-size: 13px; font-weight: bold; }
+        .card-title { font-size: 10px; color: #718096; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .card-value { font-size: 14px; font-weight: bold; }
         .card.green .card-value { color: #00b14f; }
         .card.red .card-value { color: #e53e3e; }
         .card.blue .card-value { color: #3182ce; }
         .card.orange .card-value { color: #dd6b20; }
-        .card-subvalue { font-size: 10px; color: #718096; margin-top: 2px; }
-        .section-title { font-size: 14px; font-weight: bold; padding: 0 20px; margin: 15px 0 10px 0; color: #2d3748; }
-        .table-container { padding: 0 20px 10px 20px; overflow-x: auto; }
+        .card-subvalue { font-size: 11px; color: #718096; margin-top: 2px; }
+        
+        .section-title { font-size: 14px; font-weight: bold; padding: 0 20px; margin: 15px 0 10px 0; color: #2d3748; width: 100%; }
+        .table-container { padding: 0 15px 10px 15px; overflow-x: auto; width: 100%; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
-        th { background-color: #f7fafc; color: #4a5568; text-align: left; padding: 8px 6px; border-bottom: 2px solid #e2e8f0; font-weight: bold; }
-        td { padding: 6px 6px; border-bottom: 1px solid #edf2f7; color: #2d3748; }
+        th { background-color: #f7fafc; color: #4a5568; text-align: left; padding: 10px 8px; border-bottom: 2px solid #e2e8f0; font-weight: bold; }
+        td { padding: 8px 8px; border-bottom: 1px solid #edf2f7; color: #2d3748; }
         #report-table tbody tr { cursor: pointer; transition: background-color 0.15s ease; }
         tr:hover { background-color: #edf2f7; }
         tr.row-zero { background-color: #ffe6e6 !important; }
@@ -57,23 +75,26 @@
         .text-center { text-align: center; }
         .text-green { color: #00b14f; font-weight: 500; }
         .text-red { color: #e53e3e; font-weight: 500; }
-        .progress-cell { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
-        .percentage { font-size: 11px; color: #3182ce; min-width: 32px; text-align: left; }
-        .progress-bar-bg { width: 70px; background-color: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
+        .progress-cell { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+        .percentage { font-size: 11px; color: #3182ce; min-width: 35px; text-align: left; }
+        .progress-bar-bg { width: 80px; background-color: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
         .progress-bar-fill { background-color: #3182ce; height: 100%; border-radius: 3px; }
         .yearly-net-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
-        .yearly-progress-container { width: 100%; max-width: 120px; background-color: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
+        .yearly-progress-container { width: 100%; max-width: 140px; background-color: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden; }
         .yearly-progress-fill { background-color: #00b14f; height: 100%; border-radius: 3px; }
-        .category-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px 20px; }
-        .cat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; text-align: center; }
-        .cat-title { font-size: 9px; color: #718096; margin-bottom: 4px; }
-        .cat-value { font-size: 12px; font-weight: bold; color: #00b14f; }
+        
+        .category-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 20px; width: 100%; }
+        .cat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; text-align: center; }
+        .cat-title { font-size: 10px; color: #718096; margin-bottom: 4px; }
+        .cat-value { font-size: 13px; font-weight: bold; color: #00b14f; }
         .cat-card:nth-child(3) .cat-value, .cat-card:nth-child(4) .cat-value { color: #e53e3e; }
         .cat-value[contenteditable="true"] { outline: 1px dashed #cbd5e0; padding: 2px 4px; border-radius: 4px; cursor: text; }
         .cat-value[contenteditable="true"]:focus { outline: 2px solid #3182ce; background: #f7fafc; }
-        .footer { text-align: center; font-size: 11px; color: #a0aec0; padding: 15px; border-top: 1px solid #edf2f7; background-color: #fafbfc; }
+        
+        .footer { text-align: center; font-size: 11px; color: #a0aec0; padding: 15px; border-top: 1px solid #edf2f7; background-color: #fafbfc; width: 100%; }
+        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background: #ffffff; width: 100%; max-width: 850px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-content { background: #ffffff; width: 100%; max-width: 900px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { background-color: #00b14f; color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
         .modal-close { background: transparent; border: none; color: white; font-size: 24px; font-weight: bold; cursor: pointer; }
         .modal-body { padding: 20px; overflow-y: auto; }
@@ -82,94 +103,114 @@
         .modal-body th:nth-child(3), .modal-body td:nth-child(3) { text-align: right; }
         .modal-footer { padding: 12px 20px; background-color: #f8fafc; text-align: right; border-top: 1px solid #e2e8f0; }
         .btn-modal-close { background-color: #718096; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .summary-cards, .category-cards { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
 
 <div id="full-capture-wrapper">
-    <!-- Kontainer Laporan Bulanan -->
-    <div class="container" id="capture-area">
-        <div class="header">
-            <div class="header-left">
-                <div class="nav-group">
-                    <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
-                    <button class="btn-nav-file1 btn-json" onclick="downloadJSON()">📥 Download JSON</button>
-                    <button class="btn-nav-file1 btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
-                    <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
-                </div>
-                <h1>Pendapatan Order Bulanan</h1>
-                <p id="header-periode">Periode: Memuat... • Dashboard Aktivitas Harian & Analisis Kinerja</p>
-            </div>
-            
-            <div class="controls-group">
-                <div class="control-item">
-                    <label for="monthPicker">Ubah Bulan & Tahun:</label>
-                    <input type="month" id="monthPicker" class="month-selector">
-                </div>
-                <button id="btnSavePng" class="btn-action-control btn-save">Simpan PNG</button>
-            </div>
-        </div>
-
-        <div class="summary-cards">
-            <div class="card green"><div class="card-title">Total Pemasukan</div><div class="card-value" id="val-pemasukan">Rp 0</div></div>
-            <div class="card red"><div class="card-title">Total Pengeluaran</div><div class="card-value" id="val-pengeluaran">Rp 0</div></div>
-            <div class="card blue"><div class="card-title">Penghasilan Bersih</div><div class="card-value" id="val-bersih">Rp 0</div></div>
-            <div class="card orange"><div class="card-title">Total Order/Trip</div><div class="card-value" id="val-trip">0 Order</div><div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div></div>
-        </div>
-
-        <div class="section-title">Ringkasan Aktivitas Harian Pertanggal (Tekan baris untuk lihat detail)</div>
-        <div class="table-container">
-            <table id="report-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th class="text-center">Trip</th>
-                        <th class="text-right">Argo kotor</th>
-                        <th class="text-right">Potongan aplikasi</th>
-                        <th class="text-right">Penghasilan Bersih</th>
-                        <th class="text-right">Persentase</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="section-title">Rincian Kategori</div>
-        <div class="category-cards">
-            <div class="cat-card"><div class="cat-title">Argo Aplikasi + Tip</div><div class="cat-value" id="cat-argo">Rp 0</div></div>
-            <div class="cat-card"><div class="cat-title">Bonus Stiker</div><div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div></div>
-            <div class="cat-card"><div class="cat-title">Potongan Aplikasi</div><div class="cat-value" id="cat-potongan">Rp 0</div></div>
-            <div class="cat-card"><div class="cat-title">BBM (Otomatis dari Master Data)</div><div class="cat-value" id="cat-bbm">Rp 0</div></div>
-        </div>
-
-        <div class="footer" id="footer-text">Laporan Keuangan Driver Lalamove • Format Satu Halaman</div>
+    <!-- Tab Navigasi Atas -->
+    <div class="main-tab-bar">
+        <button class="tab-btn active" onclick="switchTab('daily', this)">📊 Laporan Harian</button>
+        <button class="tab-btn" onclick="switchTab('yearly', this)">📈 Rekapitulasi Tahunan</button>
     </div>
 
-    <!-- Kontainer Laporan Tahunan (Hanya ada 1 bagian di sini) -->
-    <div class="container" id="capture-area-yearly">
-        <div class="header" style="background-color: #2b6cb0;">
-            <div>
-                <h1>Pendapatan Order Tahunan</h1>
-                <p id="header-periode-yearly">Rekapitulasi Tahun:</p>
+    <!-- Kontainer Laporan Bulanan (Tab Harian) -->
+    <div id="tab-daily" class="tab-pane active">
+        <div id="capture-area" class="container">
+            <div class="header">
+                <div class="header-left">
+                    <div class="nav-group">
+                        <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
+                    </div>
+                    <h1>Pendapatan Order Bulanan</h1>
+                    <p id="header-periode">Periode: Memuat... • Dashboard Aktivitas Harian & Analisis Kinerja</p>
+                </div>
+                
+                <div class="controls-group">
+                    <div class="control-item">
+                        <label for="monthPicker">Ubah Bulan & Tahun:</label>
+                        <input type="month" id="monthPicker" class="month-selector">
+                    </div>
+                    <button id="btnSavePng" class="btn-action-control btn-save">Simpan PNG</button>
+                </div>
             </div>
+
+            <div class="summary-cards">
+                <div class="card green"><div class="card-title">Total Pemasukan</div><div class="card-value" id="val-pemasukan">Rp 0</div></div>
+                <div class="card red"><div class="card-title">Total Pengeluaran</div><div class="card-value" id="val-pengeluaran">Rp 0</div></div>
+                <div class="card blue"><div class="card-title">Penghasilan Bersih</div><div class="card-value" id="val-bersih">Rp 0</div></div>
+                <div class="card orange"><div class="card-title">Total Order/Trip</div><div class="card-value" id="val-trip">0 Order</div><div class="card-subvalue" id="val-hari-kerja">0 Hari Kerja</div></div>
+            </div>
+
+            <div class="section-title">Ringkasan Aktivitas Harian Pertanggal (Tekan baris untuk lihat detail)</div>
+            <div class="table-container">
+                <table id="report-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th class="text-center">Trip</th>
+                            <th class="text-right">Argo kotor</th>
+                            <th class="text-right">Potongan aplikasi</th>
+                            <th class="text-right">Penghasilan Bersih</th>
+                            <th class="text-right">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="section-title">Rincian Kategori</div>
+            <div class="category-cards">
+                <div class="cat-card"><div class="cat-title">Argo Aplikasi + Tip</div><div class="cat-value" id="cat-argo">Rp 0</div></div>
+                <div class="cat-card"><div class="cat-title">Bonus Stiker</div><div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div></div>
+                <div class="cat-card"><div class="cat-title">Potongan Aplikasi</div><div class="cat-value" id="cat-potongan">Rp 0</div></div>
+                <div class="cat-card"><div class="cat-title">BBM</div><div class="cat-value" id="cat-bbm">Rp 0</div></div>
+            </div>
+
+            <div class="footer" id="footer-text">Laporan Keuangan Driver Lalamove • Format Penuh Layar</div>
         </div>
-        <div class="section-title">Rekapitulasi Per Bulan</div>
-        <div class="table-container" style="margin-bottom: 20px;">
-            <table id="yearly-table">
-                <thead>
-                    <tr>
-                        <th>Bulan</th>
-                        <th class="text-center">Total Trip</th>
-                        <th class="text-right">Total Pemasukan</th>
-                        <th class="text-right">Potongan Aplikasi</th>
-                        <th class="text-right">Pengeluaran BBM</th>
-                        <th class="text-right">Penghasilan Bersih</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    </div>
+
+    <!-- Kontainer Laporan Tahunan (Tab Tahunan) -->
+    <div id="tab-yearly" class="tab-pane">
+        <div id="capture-area-yearly" class="container">
+            <div class="header yearly-header">
+                <div class="header-left">
+                    <h1>Pendapatan Order Tahunan</h1>
+                    <p id="header-periode-yearly">Rekapitulasi Tahun:</p>
+                </div>
+                <div class="controls-group">
+                    <div class="control-item">
+                        <label for="yearPicker">Pilih Tahun:</label>
+                        <select id="yearPicker" class="year-selector">
+                            <!-- Tahun akan di-generate otomatis via JS -->
+                        </select>
+                    </div>
+                    <button id="btnSaveYearlyPng" class="btn-action-control btn-save">Simpan PNG</button>
+                </div>
+            </div>
+            <div class="section-title">Rekapitulasi Per Bulan</div>
+            <div class="table-container" style="margin-bottom: 10px;">
+                <table id="yearly-table">
+                    <thead>
+                        <tr>
+                            <th>Bulan</th>
+                            <th class="text-center">Total Trip</th>
+                            <th class="text-right">Total Pemasukan</th>
+                            <th class="text-right">Potongan Aplikasi</th>
+                            <th class="text-right">Pengeluaran BBM</th>
+                            <th class="text-right">Penghasilan Bersih</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="footer" id="footer-text-yearly">Laporan Akumulasi Tahunan Penuh Layar</div>
         </div>
-        <div class="footer" id="footer-text-yearly">Laporan Akumulasi Tahunan</div>
     </div>
 </div>
 
@@ -270,6 +311,10 @@
             storage_key: `lalamove_bonus_${pickerValue}`,
             data: bonusVal
         }, { onConflict: 'storage_key' });
+        
+        // Hapus cache sesi tahunan jika bonus diubah agar data diperbarui saat tab tahunan dibuka kembali
+        const year = pickerValue.split('-')[0];
+        sessionStorage.removeItem(`yearly_cache_${year}`);
     }
 
     async function generateTableRows(year, monthIndex) {
@@ -306,9 +351,6 @@
 
         attachTableEvents();
         recalculate();
-        
-        // Panggilan Rekapitulasi Tahunan dilakukan SATU KALI di sini setelah data bulanan dimuat
-        await generateYearlyReport(year);
     }
 
     async function showDetailModal(day, year, monthIndex) {
@@ -354,43 +396,79 @@
 
     function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
 
+    // --- OPTIMASI: Menggunakan Promise.all & Session Storage Caching ---
     async function generateYearlyReport(year) {
         const tbodyYearly = document.querySelector('#yearly-table tbody');
         if (!tbodyYearly) return;
-        tbodyYearly.innerHTML = '';
 
-        let totalYearTrip = 0, totalYearPemasukan = 0, totalYearPengeluaran = 0, totalYearBbm = 0, totalYearBersih = 0;
+        const cacheKey = `yearly_cache_${year}`;
         let monthlyBersihData = [];
+        let totalYearTrip = 0, totalYearPemasukan = 0, totalYearPengeluaran = 0, totalYearBbm = 0, totalYearBersih = 0;
 
-        for (let m = 0; m < 12; m++) {
-            const monthResult = await loadSavedDataAndBbm(year, m);
-            const monthBonus = (await loadSavedBonus(getBonusStorageKey(year, m))) || 0;
+        // Cek Cache Sesi Terlebih Dahulu (Instan Tanpa Delay)
+        if (sessionStorage.getItem(cacheKey)) {
+            const cached = JSON.parse(sessionStorage.getItem(cacheKey));
+            monthlyBersihData = cached.monthlyBersihData;
+            totalYearTrip = cached.totalYearTrip;
+            totalYearPemasukan = cached.totalYearPemasukan;
+            totalYearPengeluaran = cached.totalYearPengeluaran;
+            totalYearBbm = cached.totalYearBbm;
+            totalYearBersih = cached.totalYearBersih;
+        } else {
+            // Tampilkan indikator loading sementara memuat data secara paralel
+            tbodyYearly.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 20px; color: #718096;">Memuat data rekapitulasi tahun ${year}...</td></tr>`;
 
-            let mTrip = 0, mPemasukanHarian = 0, mPengeluaranHarian = 0;
-            monthResult.dailySummary.forEach(row => {
-                mTrip += row.trip || 0;
-                mPemasukanHarian += row.pemasukan || 0;
-                mPengeluaranHarian += row.pengeluaran || 0;
+            // Eksekusi pemanggilan 12 bulan secara paralel menggunakan Promise.all
+            const monthPromises = Array.from({ length: 12 }, async (_, m) => {
+                const monthResult = await loadSavedDataAndBbm(year, m);
+                const monthBonus = (await loadSavedBonus(getBonusStorageKey(year, m))) || 0;
+                return { m, monthResult, monthBonus };
             });
 
-            let mTotalPemasukan = mPemasukanHarian + monthBonus;
-            let mTotalPengeluaran = mPengeluaranHarian + monthResult.totalBbmBulanIni;
-            let mBersih = mTotalPemasukan - mTotalPengeluaran;
+            const yearlyResults = await Promise.all(monthPromises);
 
-            totalYearTrip += mTrip;
-            totalYearPemasukan += mTotalPemasukan;
-            totalYearPengeluaran += mPengeluaranHarian;
-            totalYearBbm += monthResult.totalBbmBulanIni;
-            totalYearBersih += mBersih;
+            // Urutkan kembali berdasarkan indeks bulan (0 - 11)
+            yearlyResults.sort((a, b) => a.m - b.m);
 
-            monthlyBersihData.push({
-                monthName: namaBulanPanjang[m], trip: mTrip, pemasukan: mTotalPemasukan,
-                pengeluaranHarian: mPengeluaranHarian, bbm: monthResult.totalBbmBulanIni, bersih: mBersih,
-                isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0 && monthResult.totalBbmBulanIni === 0)
+            yearlyResults.forEach(item => {
+                const m = item.m;
+                const monthResult = item.monthResult;
+                const monthBonus = item.monthBonus;
+
+                let mTrip = 0, mPemasukanHarian = 0, mPengeluaranHarian = 0;
+                monthResult.dailySummary.forEach(row => {
+                    mTrip += row.trip || 0;
+                    mPemasukanHarian += row.pemasukan || 0;
+                    mPengeluaranHarian += row.pengeluaran || 0;
+                });
+
+                let mTotalPemasukan = mPemasukanHarian + monthBonus;
+                let mTotalPengeluaran = mPengeluaranHarian + monthResult.totalBbmBulanIni;
+                let mBersih = mTotalPemasukan - mTotalPengeluaran;
+
+                totalYearTrip += mTrip;
+                totalYearPemasukan += mTotalPemasukan;
+                totalYearPengeluaran += mPengeluaranHarian;
+                totalYearBbm += monthResult.totalBbmBulanIni;
+                totalYearBersih += mBersih;
+
+                monthlyBersihData.push({
+                    monthName: namaBulanPanjang[m], trip: mTrip, pemasukan: mTotalPemasukan,
+                    pengeluaranHarian: mPengeluaranHarian, bbm: monthResult.totalBbmBulanIni, bersih: mBersih,
+                    isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0 && monthResult.totalBbmBulanIni === 0)
+                });
             });
+
+            // Simpan hasil ke session storage agar pemanggilan berikutnya instan
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+                monthlyBersihData, totalYearTrip, totalYearPemasukan, totalYearPengeluaran, totalYearBbm, totalYearBersih
+            }));
         }
 
+        // Render tabel tahunan
+        tbodyYearly.innerHTML = '';
         let maxMonthBersih = Math.max(...monthlyBersihData.map(i => i.bersih), 0);
+        
         monthlyBersihData.forEach(item => {
             let percentage = maxMonthBersih > 0 ? Math.min(Math.max((item.bersih / maxMonthBersih) * 100, 0), 100) : 0;
             const tr = document.createElement('tr');
@@ -482,51 +560,65 @@
         await generateTableRows(year, monthIndex);
 
         document.getElementById('header-periode').innerText = `Periode: ${namaBulanPanjang[monthIndex]} ${year} • Dashboard Aktivitas Harian & Analisis Kinerja`;
-        document.getElementById('footer-text').innerText = `Laporan Keuangan Driver Lalamove • ${namaBulanPanjang[monthIndex]} ${year} • Format Satu Halaman`;
+        document.getElementById('footer-text').innerText = `Laporan Keuangan Driver Lalamove • ${namaBulanPanjang[monthIndex]} ${year} • Format Penuh Layar`;
+    }
+
+    // Fungsi Pengganti Tab Navigasi
+    function switchTab(tabName, btnElement) {
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        if (tabName === 'daily') {
+            document.getElementById('tab-daily').classList.add('active');
+        } else if (tabName === 'yearly') {
+            document.getElementById('tab-yearly').classList.add('active');
+            const currentYear = document.getElementById('monthPicker').value.split('-')[0] || new Date().getFullYear();
+            document.getElementById('yearPicker').value = currentYear;
+            generateYearlyReport(parseInt(currentYear));
+        }
+        btnElement.classList.add('active');
+    }
+
+    // Inisialisasi Pilihan Tahun
+    function initYearPicker() {
+        const yearPicker = document.getElementById('yearPicker');
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === currentYear) opt.selected = true;
+            yearPicker.appendChild(opt);
+        }
+        yearPicker.addEventListener('change', function() {
+            generateYearlyReport(parseInt(this.value));
+        });
     }
 
     document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
 
+    // Tombol Download PNG Harian
     document.getElementById('btnSavePng').addEventListener('click', function() {
-        html2canvas(document.getElementById('full-capture-wrapper'), { scale: 2, useCORS: true }).then(canvas => {
+        html2canvas(document.getElementById('capture-area'), { scale: 2, useCORS: true }).then(canvas => {
             const link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
-            link.download = `Laporan-Lalamove-Full-${document.getElementById('monthPicker').value}.png`;
+            link.download = `Laporan-Lalamove-Harian-${document.getElementById('monthPicker').value}.png`;
             link.click();
         });
     });
 
-    async function downloadJSON() {
-        const { data } = await _supabase.from('laporan_lalamove').select('*');
-        const exportData = {};
-        data.forEach(item => { exportData[item.storage_key] = JSON.stringify(item.data); });
-
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `backup_lalamove_${document.getElementById('monthPicker').value}.json`);
-        downloadAnchor.click();
-    }
-
-    async function uploadJSON(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                for (const key in importedData) {
-                    await _supabase.from('laporan_lalamove').upsert({ storage_key: key, data: JSON.parse(importedData[key]) }, { onConflict: 'storage_key' });
-                }
-                alert("Data berhasil dipulihkan ke Supabase!");
-                handleMonthChange();
-            } catch (err) { alert("Format file JSON tidak valid!"); }
-        };
-        reader.readAsText(file);
-    }
+    // Tombol Download PNG Tahunan
+    document.getElementById('btnSaveYearlyPng').addEventListener('click', function() {
+        html2canvas(document.getElementById('capture-area-yearly'), { scale: 2, useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `Laporan-Lalamove-Tahunan-${document.getElementById('yearPicker').value}.png`;
+            link.click();
+        });
+    });
 
     window.onload = async function() {
+        initYearPicker();
         const now = new Date();
         document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         await handleMonthChange();
