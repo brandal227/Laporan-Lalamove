@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pendapatan Lalamove - Supabase</title>
-    <!-- html2canvas CDN -->
+    <title>Laporan Pendapatan Lalamove</title>
+    <!-- Memuat html2canvas melalui CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Supabase JS Client CDN -->
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
@@ -20,6 +20,7 @@
         .btn-nav-file1 { background-color: #f37021; color: white; text-decoration: none; padding: 7px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; border: none; cursor: pointer; }
         .btn-nav-file1:hover { background-color: #d95e14; }
         .btn-json { background-color: #3182ce; }
+        .btn-json:hover { background-color: #2b6cb0; }
         .controls-group { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
         .control-item { display: flex; flex-direction: column; gap: 3px; }
         .control-item label { font-size: 11px; font-weight: bold; opacity: 0.9; }
@@ -49,7 +50,9 @@
         #report-table tbody tr { cursor: pointer; transition: background-color 0.15s ease; }
         tr:hover { background-color: #edf2f7; }
         tr.row-zero { background-color: #ffe6e6 !important; }
-        tr.row-total { background-color: #edf2f7 !important; font-weight: bold; }
+        tr.row-zero td { color: #e29999 !important; }
+        tr.row-total { background-color: #edf2f7 !important; font-weight: bold; cursor: default !important; }
+        tr.row-total td { border-top: 2px solid #cbd5e0; border-bottom: 2px solid #cbd5e0; color: #1a202c; }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .text-green { color: #00b14f; font-weight: 500; }
@@ -67,14 +70,18 @@
         .cat-value { font-size: 12px; font-weight: bold; color: #00b14f; }
         .cat-card:nth-child(3) .cat-value, .cat-card:nth-child(4) .cat-value { color: #e53e3e; }
         .cat-value[contenteditable="true"] { outline: 1px dashed #cbd5e0; padding: 2px 4px; border-radius: 4px; cursor: text; }
+        .cat-value[contenteditable="true"]:focus { outline: 2px solid #3182ce; background: #f7fafc; }
         .footer { text-align: center; font-size: 11px; color: #a0aec0; padding: 15px; border-top: 1px solid #edf2f7; background-color: #fafbfc; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-content { background: #ffffff; width: 100%; max-width: 850px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { background-color: #00b14f; color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
         .modal-close { background: transparent; border: none; color: white; font-size: 24px; font-weight: bold; cursor: pointer; }
         .modal-body { padding: 20px; overflow-y: auto; }
+        .modal-body table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .modal-body th, .modal-body td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .modal-body th:nth-child(3), .modal-body td:nth-child(3) { text-align: right; }
         .modal-footer { padding: 12px 20px; background-color: #f8fafc; text-align: right; border-top: 1px solid #e2e8f0; }
-        .btn-modal-close { background-color: #718096; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-modal-close { background-color: #718096; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -85,12 +92,12 @@
             <div class="header-left">
                 <div class="nav-group">
                     <a href="index.html" class="btn-nav-file1">📝 Buka Master Data</a>
-                    <button class="btn-nav-file1 btn-json" onclick="exportDataJSON()">📥 Download JSON</button>
+                    <button class="btn-nav-file1 btn-json" onclick="downloadJSON()">📥 Download JSON</button>
                     <button class="btn-nav-file1 btn-json" onclick="document.getElementById('importJsonFile').click()">📤 Upload JSON</button>
-                    <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="importDataJSON(event)">
+                    <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
                 </div>
                 <h1>Pendapatan Order Bulanan</h1>
-                <p id="header-periode">Periode: Memuat... • Dashboard Aktivitas Harian</p>
+                <p id="header-periode">Periode: Memuat... • Dashboard Aktivitas Harian & Analisis Kinerja</p>
             </div>
             
             <div class="controls-group">
@@ -131,13 +138,12 @@
             <div class="cat-card"><div class="cat-title">Argo Aplikasi + Tip</div><div class="cat-value" id="cat-argo">Rp 0</div></div>
             <div class="cat-card"><div class="cat-title">Bonus Stiker</div><div class="cat-value" id="cat-bonus" contenteditable="true" inputmode="numeric">Rp 200.000</div></div>
             <div class="cat-card"><div class="cat-title">Potongan Aplikasi</div><div class="cat-value" id="cat-potongan">Rp 0</div></div>
-            <div class="cat-card"><div class="cat-title">BBM (Otomatis Master Data)</div><div class="cat-value" id="cat-bbm">Rp 0</div></div>
+            <div class="cat-card"><div class="cat-title">BBM (Otomatis dari Master Data)</div><div class="cat-value" id="cat-bbm">Rp 0</div></div>
         </div>
 
         <div class="footer" id="footer-text">Laporan Keuangan Driver Lalamove • Format Satu Halaman</div>
     </div>
 
-    <!-- CONTAINER TAHUNAN -->
     <div class="container" id="capture-area-yearly">
         <div class="header" style="background-color: #2b6cb0;">
             <div>
@@ -165,7 +171,6 @@
     </div>
 </div>
 
-<!-- Modal Detail -->
 <div class="modal-overlay" id="detailModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -174,100 +179,84 @@
         </div>
         <div class="modal-body">
             <table id="modal-table">
-                <thead>
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Jenis Transaksi</th>
-                        <th class="text-right">Nominal</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Tanggal</th><th>Jenis Transaksi</th><th class="text-right">Nominal</th></tr></thead>
                 <tbody id="modal-table-body"></tbody>
             </table>
         </div>
-        <div class="modal-footer">
-            <button class="btn-modal-close" onclick="closeDetailModal()">Tutup</button>
-        </div>
+        <div class="modal-footer"><button class="btn-modal-close" onclick="closeDetailModal()">Tutup</button></div>
     </div>
 </div>
 
 <script>
-    // INISIALISASI SUPABASE (Ganti dengan kredensial Anda)
-    const SUPABASE_URL = 'https://rnocczjkimskxnomdvhn.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_36aOxpL_SCcF-DFspJ6IUQ_ngfdAOMs';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // --- KONFIGURASI SUPABASE ---
+    const SUPABASE_URL = 'https://rnocczjkimskxnomdvhn.supabase.co'; // Ganti dengan URL Supabase Anda
+    const SUPABASE_ANON_KEY = 'sb_publishable_36aOxpL_SCcF-DFspJ6IUQ_ngfdAOMs'; // Ganti dengan Anon Key Supabase Anda
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const namaBulanPanjang = ["januari", "februari", "maret", "april", "mei", "juni", "juli", "agustus", "september", "oktober", "november", "desember"];
+    const namaBulanPanjang = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
     function formatRupiah(angka) {
         return 'Rp ' + Number(angka).toLocaleString('id-ID');
     }
 
-    async function fetchDataFromSupabase(bulanNama, tahun) {
-        const { data, error } = await _supabase
-            .from('laporan_lalamove')
-            .select('*')
-            .eq('bulan', bulanNama.toLowerCase())
-            .eq('tahun', String(tahun));
-
-        if (error) {
-            console.error('Error fetching data:', error);
-            return [];
-        }
-        return data || [];
+    function getFile1StorageKey(bulanNama, tahun) {
+        return `laporan_lalamove_${bulanNama.toLowerCase()}_${tahun}`;
     }
 
-    async function loadSavedBonus(bulanTahunKey) {
-        const { data, error } = await _supabase
-            .from('laporan_bonus')
-            .select('bonus')
-            .eq('bulan_tahun', bulanTahunKey)
-            .single();
-
-        if (error || !data) return null;
-        return data.bonus;
+    function getBonusStorageKey(year, monthIndex) {
+        return `lalamove_bonus_${year}-${String(monthIndex + 1).padStart(2, '0')}`;
     }
 
-    async function saveBonusToSupabase(bulanTahunKey, bonusVal) {
-        await _supabase
-            .from('laporan_bonus')
-            .upsert({ bulan_tahun: bulanTahunKey, bonus: bonusVal }, { onConflict: 'bulan_tahun' });
+    async function getSupabaseData(key) {
+        const { data } = await _supabase.from('laporan_lalamove').select('data').eq('storage_key', key).single();
+        return data ? data.data : null;
     }
 
-    async function loadDataAndProcess(year, monthIndex) {
+    async function loadSavedDataAndBbm(year, monthIndex) {
         const bulanNama = namaBulanPanjang[monthIndex];
-        const rawData = await fetchDataFromSupabase(bulanNama, year);
+        const file1Key = getFile1StorageKey(bulanNama, year);
+        const rawData = await getSupabaseData(file1Key);
 
         const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
         let dailySummary = Array.from({ length: jumlahHari }, () => ({ trip: 0, pemasukan: 0, pengeluaran: 0 }));
         let totalBbmBulanIni = 0;
 
-        rawData.forEach(row => {
-            const tanggalCol = row.tanggal ? row.tanggal.trim() : "";
-            const deskripsiCol = row.jenis_transaksi ? row.jenis_transaksi.trim().toLowerCase() : "";
-            const nominalVal = parseFloat(row.nominal) || 0;
+        if (rawData) {
+            let currentDayIndex = -1;
+            rawData.forEach(row => {
+                const tanggalCol = row[0] ? row[0].trim() : "";
+                const deskripsiCol = row[1] ? row[1].trim().toLowerCase() : "";
+                const col2Val = row[2] ? parseFloat(row[2].replace(/[^0-9]/g, '')) || 0 : 0;
+                const col3Val = row[3] ? parseFloat(row[3].replace(/[^0-9]/g, '')) || 0 : 0;
+                const nominalVal = col2Val > 0 ? col2Val : col3Val;
 
-            let dayIndex = -1;
-            if (tanggalCol !== "") {
-                const dayMatch = tanggalCol.match(/^(\d{1,2})/);
-                if (dayMatch) dayIndex = parseInt(dayMatch[1], 10) - 1;
-            }
-
-            if (deskripsiCol.includes("bbm")) {
-                totalBbmBulanIni += nominalVal;
-            } else if (dayIndex >= 0 && dayIndex < jumlahHari) {
-                if (deskripsiCol.includes("argo kotor")) {
-                    dailySummary[dayIndex].trip += 1;
-                    dailySummary[dayIndex].pemasukan += nominalVal;
-                } else if (deskripsiCol.includes("potongan aplikasi")) {
-                    dailySummary[dayIndex].pengeluaran += nominalVal;
-                } else if (nominalVal > 0) {
-                    dailySummary[dayIndex].pemasukan += nominalVal;
+                if (tanggalCol !== "") {
+                    const dayMatch = tanggalCol.match(/^(\d{1,2})/);
+                    if (dayMatch) currentDayIndex = parseInt(dayMatch[1], 10) - 1;
                 }
-            }
-        });
 
-        return { dailySummary, totalBbmBulanIni, rawData };
+                if (deskripsiCol.includes("bbm")) {
+                    totalBbmBulanIni += nominalVal;
+                } else if (currentDayIndex >= 0 && currentDayIndex < jumlahHari) {
+                    if (deskripsiCol.includes("argo kotor")) {
+                        dailySummary[currentDayIndex].trip += 1;
+                        dailySummary[currentDayIndex].pemasukan += nominalVal;
+                    } else if (deskripsiCol.includes("potongan aplikasi")) {
+                        dailySummary[currentDayIndex].pengeluaran += nominalVal;
+                    } else if (nominalVal > 0) {
+                        dailySummary[currentDayIndex].pemasukan += nominalVal;
+                    }
+                }
+            });
+        }
+        return { dailySummary, totalBbmBulanIni };
+    }
+
+    async function loadSavedBonus(key) {
+        const saved = await getSupabaseData(key);
+        return saved !== null ? parseFloat(saved) : null;
     }
 
     async function saveData() {
@@ -275,10 +264,13 @@
         if (!pickerValue) return;
 
         const bonusVal = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
-        await saveBonusToSupabase(pickerValue, bonusVal);
+        await _supabase.from('laporan_lalamove').upsert({
+            storage_key: `lalamove_bonus_${pickerValue}`,
+            data: bonusVal
+        }, { onConflict: 'storage_key' });
 
         const year = parseInt(pickerValue.split('-')[0]);
-        generateYearlyReport(year);
+        await generateYearlyReport(year);
     }
 
     async function generateTableRows(year, monthIndex) {
@@ -288,7 +280,7 @@
         const jumlahHari = new Date(year, monthIndex + 1, 0).getDate();
         const formatTahun = String(year).slice(-2);
         
-        const resultData = await loadDataAndProcess(year, monthIndex);
+        const resultData = await loadSavedDataAndBbm(year, monthIndex);
         const dailyData = resultData.dailySummary;
 
         for (let i = 1; i <= jumlahHari; i++) {
@@ -302,75 +294,64 @@
                 <td class="text-right text-green">${formatRupiah(data.pemasukan)}</td>
                 <td class="text-right text-red">${formatRupiah(data.pengeluaran)}</td>
                 <td class="text-right" style="font-weight: 500;">Rp 0</td>
-                <td class="text-right">
-                    <div class="progress-cell">
-                        <span class="percentage">0%</span>
-                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div>
-                    </div>
-                </td>
+                <td class="text-right"><div class="progress-cell"><span class="percentage">0%</span><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0%;"></div></div></div></td>
             `;
 
-            tr.addEventListener('click', () => showDetailModal(i, year, monthIndex, resultData.rawData));
+            tr.addEventListener('click', () => showDetailModal(i, year, monthIndex));
             tbody.appendChild(tr);
         }
 
         document.getElementById('cat-bbm').innerText = formatRupiah(resultData.totalBbmBulanIni);
-
-        const pickerValue = document.getElementById('monthPicker').value;
-        const savedBonus = await loadSavedBonus(pickerValue);
+        const savedBonus = await loadSavedBonus(`lalamove_bonus_${document.getElementById('monthPicker').value}`);
         document.getElementById('cat-bonus').innerText = formatRupiah(savedBonus !== null ? savedBonus : 0); 
 
         attachTableEvents();
         recalculate();
-        generateYearlyReport(year);
+        await generateYearlyReport(year);
     }
 
-    function showDetailModal(day, year, monthIndex, rawData) {
+    async function showDetailModal(day, year, monthIndex) {
+        const bulanNama = namaBulanPanjang[monthIndex];
+        const rawData = await getSupabaseData(getFile1StorageKey(bulanNama, year));
+
         const modalTableBody = document.getElementById('modal-table-body');
         modalTableBody.innerHTML = '';
-        const bulanPanjangLabel = namaBulanPanjang[monthIndex].charAt(0).toUpperCase() + namaBulanPanjang[monthIndex].slice(1);
-        document.getElementById('modalTitle').innerText = `Detail Master Data: Tanggal ${day} ${bulanPanjangLabel} ${year}`;
+        document.getElementById('modalTitle').innerText = `Detail Master Data: Tanggal ${day} ${bulanNama} ${year}`;
 
         let foundRows = 0;
-        rawData.forEach(row => {
-            const tanggalCol = row.tanggal ? row.tanggal.trim() : "";
-            const deskripsiCol = row.jenis_transaksi ? row.jenis_transaksi.trim() : "";
-            const nominalVal = formatRupiah(row.nominal || 0);
-
+        if (rawData) {
             let currentDayIndex = -1;
-            if (tanggalCol !== "") {
-                const dayMatch = tanggalCol.match(/^(\d{1,2})/);
-                if (dayMatch) currentDayIndex = parseInt(dayMatch[1], 10) - 1;
-            }
+            rawData.forEach(row => {
+                const tanggalCol = row[0] ? row[0].trim() : "";
+                const deskripsiCol = row[1] ? row[1].trim() : "";
+                const deskripsiLower = deskripsiCol.toLowerCase();
+                const nominalVal = (row[2] && row[2] !== "" && row[2] !== "Rp 0") ? row[2] : row[3];
 
-            if (currentDayIndex === (day - 1)) {
-                foundRows++;
-                let fontColorStyle = "";
-                const deskLow = deskripsiCol.toLowerCase();
-                if (deskLow.includes("argo kotor")) fontColorStyle = "color: #3182ce; font-weight: bold;";
-                else if (deskLow.includes("potongan aplikasi")) fontColorStyle = "color: #e53e3e; font-weight: bold;";
-                else if (deskLow.includes("bbm")) fontColorStyle = "color: #d97706; font-weight: bold;";
+                if (tanggalCol !== "") {
+                    const dayMatch = tanggalCol.match(/^(\d{1,2})/);
+                    if (dayMatch) currentDayIndex = parseInt(dayMatch[1], 10) - 1;
+                }
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${tanggalCol}</td>
-                    <td style="${fontColorStyle}">${deskripsiCol}</td>
-                    <td class="text-right" style="${fontColorStyle}">${nominalVal}</td>
-                `;
-                modalTableBody.appendChild(tr);
-            }
-        });
+                if (currentDayIndex === (day - 1)) {
+                    foundRows++;
+                    let style = deskripsiLower.includes("argo kotor") ? "color: #3182ce; font-weight: bold;" :
+                                deskripsiLower.includes("potongan aplikasi") ? "color: #e53e3e; font-weight: bold;" :
+                                deskripsiLower.includes("bbm") ? "color: #d97706; font-weight: bold;" : "";
 
-        if (foundRows === 0) {
-            modalTableBody.innerHTML = `<tr><td colspan="3" class="text-center" style="padding: 20px; color: #718096; font-style: italic;">Tidak ada data aktivitas untuk tanggal ini.</td></tr>`;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${tanggalCol}</td><td style="${style}">${deskripsiCol}</td><td class="text-right" style="${style}">${nominalVal}</td>`;
+                    modalTableBody.appendChild(tr);
+                }
+            });
         }
 
+        if (foundRows === 0) {
+            modalTableBody.innerHTML = `<tr><td colspan="3" class="text-center" style="padding: 20px; color: #718096; font-style: italic;">Tidak ada data aktivitas.</td></tr>`;
+        }
         document.getElementById('detailModal').style.display = 'flex';
     }
 
-    function closeDetailModal() {
-        document.getElementById('detailModal').style.display = 'none';
-    }
+    function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
 
     async function generateYearlyReport(year) {
         const tbodyYearly = document.querySelector('#yearly-table tbody');
@@ -380,45 +361,36 @@
         let monthlyBersihData = [];
 
         for (let m = 0; m < 12; m++) {
-            const monthResult = await loadDataAndProcess(year, m);
-            const monthData = monthResult.dailySummary;
-            const monthBbm = monthResult.totalBbmBulanIni;
-
-            const mStr = String(m + 1).padStart(2, '0');
-            const bonusKey = `${year}-${mStr}`;
-            const monthBonus = (await loadSavedBonus(bonusKey)) || 0;
+            const monthResult = await loadSavedDataAndBbm(year, m);
+            const monthBonus = (await loadSavedBonus(getBonusStorageKey(year, m))) || 0;
 
             let mTrip = 0, mPemasukanHarian = 0, mPengeluaranHarian = 0;
-            monthData.forEach(row => {
+            monthResult.dailySummary.forEach(row => {
                 mTrip += row.trip || 0;
                 mPemasukanHarian += row.pemasukan || 0;
                 mPengeluaranHarian += row.pengeluaran || 0;
             });
 
             let mTotalPemasukan = mPemasukanHarian + monthBonus;
-            let mTotalPengeluaran = mPengeluaranHarian + monthBbm;
+            let mTotalPengeluaran = mPengeluaranHarian + monthResult.totalBbmBulanIni;
             let mBersih = mTotalPemasukan - mTotalPengeluaran;
 
             totalYearTrip += mTrip;
             totalYearPemasukan += mTotalPemasukan;
             totalYearPengeluaran += mPengeluaranHarian;
-            totalYearBbm += monthBbm;
+            totalYearBbm += monthResult.totalBbmBulanIni;
             totalYearBersih += mBersih;
 
-            const labelBulanKapital = namaBulanPanjang[m].charAt(0).toUpperCase() + namaBulanPanjang[m].slice(1);
             monthlyBersihData.push({
-                monthName: labelBulanKapital,
-                trip: mTrip, pemasukan: mTotalPemasukan, pengeluaranHarian: mPengeluaranHarian,
-                bbm: monthBbm, bersih: mBersih, isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0 && monthBbm === 0)
+                monthName: namaBulanPanjang[m], trip: mTrip, pemasukan: mTotalPemasukan,
+                pengeluaranHarian: mPengeluaranHarian, bbm: monthResult.totalBbmBulanIni, bersih: mBersih,
+                isEmpty: (mTrip === 0 && mPemasukanHarian === 0 && mPengeluaranHarian === 0 && monthResult.totalBbmBulanIni === 0)
             });
         }
 
-        let maxMonthBersih = Math.max(...monthlyBersihData.map(item => item.bersih), 0);
-
+        let maxMonthBersih = Math.max(...monthlyBersihData.map(i => i.bersih), 0);
         monthlyBersihData.forEach(item => {
-            let percentage = maxMonthBersih > 0 ? (item.bersih / maxMonthBersih) * 100 : 0;
-            percentage = Math.max(0, Math.min(100, percentage));
-
+            let percentage = maxMonthBersih > 0 ? Math.min(Math.max((item.bersih / maxMonthBersih) * 100, 0), 100) : 0;
             const tr = document.createElement('tr');
             if (item.isEmpty) tr.classList.add('row-zero');
             tr.innerHTML = `
@@ -427,12 +399,7 @@
                 <td class="text-right text-green">${formatRupiah(item.pemasukan)}</td>
                 <td class="text-right text-red">${formatRupiah(item.pengeluaranHarian)}</td>
                 <td class="text-right text-red">${formatRupiah(item.bbm)}</td>
-                <td class="text-right">
-                    <div class="yearly-net-cell">
-                        <span class="yearly-net-text">${formatRupiah(item.bersih)}</span>
-                        <div class="yearly-progress-container"><div class="yearly-progress-fill" style="width: ${percentage}%;"></div></div>
-                    </div>
-                </td>
+                <td class="text-right"><div class="yearly-net-cell"><span class="yearly-net-text">${formatRupiah(item.bersih)}</span><div class="yearly-progress-container"><div class="yearly-progress-fill" style="width: ${percentage}%;"></div></div></div></td>
             `;
             tbodyYearly.appendChild(tr);
         });
@@ -445,7 +412,7 @@
             <td class="text-right text-green">${formatRupiah(totalYearPemasukan)}</td>
             <td class="text-right text-red">${formatRupiah(totalYearPengeluaran)}</td>
             <td class="text-right text-red">${formatRupiah(totalYearBbm)}</td>
-            <td class="text-right">${formatRupiah(totalYearBersih)}</td>
+            <td class="text-right" style="font-weight: bold;">${formatRupiah(totalYearBersih)}</td>
         `;
         tbodyYearly.appendChild(totalTr);
 
@@ -475,37 +442,22 @@
         const bonusValue = parseFloat(document.getElementById('cat-bonus').innerText.replace(/[^0-9]/g, '')) || 0;
         const bbmValue = parseFloat(document.getElementById('cat-bbm').innerText.replace(/[^0-9]/g, '')) || 0;
 
-        const totalPemasukanKeseluruhan = totalPemasukanHarian + bonusValue;
-        const totalPengeluaranKeseluruhan = totalPengeluaranHarian + bbmValue;
-        const penghasilanBersih = totalPemasukanKeseluruhan - totalPengeluaranKeseluruhan;
-
-        document.getElementById('val-pemasukan').innerText = formatRupiah(totalPemasukanKeseluruhan);
-        document.getElementById('val-pengeluaran').innerText = formatRupiah(totalPengeluaranKeseluruhan);
-        document.getElementById('val-bersih').innerText = formatRupiah(penghasilanBersih);
+        document.getElementById('val-pemasukan').innerText = formatRupiah(totalPemasukanHarian + bonusValue);
+        document.getElementById('val-pengeluaran').innerText = formatRupiah(totalPengeluaranHarian + bbmValue);
+        document.getElementById('val-bersih').innerText = formatRupiah((totalPemasukanHarian + bonusValue) - (totalPengeluaranHarian + bbmValue));
         document.getElementById('val-trip').innerText = totalTrip + ' Order';
         document.getElementById('val-hari-kerja').innerText = hariKerja + ' Hari Kerja';
 
         document.getElementById('cat-argo').innerText = formatRupiah(totalPemasukanHarian);
-        document.getElementById('cat-potongan').innerText = formatRupiah(totalPengeluaranHarian); 
+        document.getElementById('cat-potongan').innerText = formatRupiah(totalPengeluaranHarian);
 
-        let maxBersih = Math.max(...tempRowsData.map(d => d.bersih), 0);
-
+        let maxBersih = Math.max(...tempRowsData.map(i => i.bersih), 0);
         tempRowsData.forEach(data => {
             const cells = data.row.querySelectorAll('td');
             cells[4].innerText = formatRupiah(data.bersih);
-
-            let percentage = maxBersih > 0 ? (data.bersih / maxBersih) * 100 : 0;
-            percentage = Math.max(0, Math.min(100, percentage));
-
-            cells[5].innerHTML = `
-                <div class="progress-cell">
-                    <span class="percentage">${percentage.toFixed(1)}%</span>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percentage}%;"></div></div>
-                </div>
-            `;
-
-            if (data.trip === 0 && data.pemasukan === 0 && data.pengeluaran === 0) data.row.classList.add('row-zero');
-            else data.row.classList.remove('row-zero');
+            let percentage = maxBersih > 0 ? Math.min(Math.max((data.bersih / maxBersih) * 100, 0), 100) : 0;
+            cells[5].innerHTML = `<div class="progress-cell"><span class="percentage">${percentage.toFixed(1)}%</span><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percentage}%;"></div></div></div>`;
+            data.trip === 0 && data.pemasukan === 0 && data.pengeluaran === 0 ? data.row.classList.add('row-zero') : data.row.classList.remove('row-zero');
         });
 
         saveData();
@@ -514,8 +466,7 @@
     function attachTableEvents() {
         const bonusEl = document.getElementById('cat-bonus');
         bonusEl.onblur = function() {
-            const val = parseFloat(this.innerText.replace(/[^0-9]/g, '')) || 0;
-            this.innerText = formatRupiah(val);
+            this.innerText = formatRupiah(parseFloat(this.innerText.replace(/[^0-9]/g, '')) || 0);
             recalculate();
         };
         bonusEl.onkeypress = function(e) { if (e.key === 'Enter') { e.preventDefault(); bonusEl.blur(); } };
@@ -525,14 +476,11 @@
         const pickerValue = document.getElementById('monthPicker').value;
         if (!pickerValue) return;
 
-        const [yearStr, monthStr] = pickerValue.split('-');
-        const year = parseInt(yearStr);
-        const monthIndex = parseInt(monthStr) - 1;
-
+        const [year, monthIndex] = pickerValue.split('-').map((v, i) => i === 0 ? parseInt(v) : parseInt(v) - 1);
         await generateTableRows(year, monthIndex);
 
-        const bulanKapitalLabel = namaBulanPanjang[monthIndex].charAt(0).toUpperCase() + namaBulanPanjang[monthIndex].slice(1);
-        document.getElementById('header-periode').innerText = `Periode: ${bulanKapitalLabel} ${year} • Dashboard Kinerja`;
+        document.getElementById('header-periode').innerText = `Periode: ${namaBulanPanjang[monthIndex]} ${year} • Dashboard Aktivitas Harian & Analisis Kinerja`;
+        document.getElementById('footer-text').innerText = `Laporan Keuangan Driver Lalamove • ${namaBulanPanjang[monthIndex]} ${year} • Format Satu Halaman`;
     }
 
     document.getElementById('monthPicker').addEventListener('change', handleMonthChange);
@@ -541,23 +489,24 @@
         html2canvas(document.getElementById('full-capture-wrapper'), { scale: 2, useCORS: true }).then(canvas => {
             const link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
-            link.download = `Laporan-Lalamove-${document.getElementById('monthPicker').value}.png`;
+            link.download = `Laporan-Lalamove-Full-${document.getElementById('monthPicker').value}.png`;
             link.click();
         });
     });
 
-    async function exportDataJSON() {
+    async function downloadJSON() {
         const { data } = await _supabase.from('laporan_lalamove').select('*');
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+        const exportData = {};
+        data.forEach(item => { exportData[item.storage_key] = JSON.stringify(item.data); });
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `backup_lalamove_all.json`);
-        document.body.appendChild(downloadAnchor);
+        downloadAnchor.setAttribute("download", `backup_lalamove_${document.getElementById('monthPicker').value}.json`);
         downloadAnchor.click();
-        downloadAnchor.remove();
     }
 
-    async function importDataJSON(event) {
+    async function uploadJSON(event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -565,24 +514,20 @@
         reader.onload = async function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                if (Array.isArray(importedData)) {
-                    const cleaned = importedData.map(({ id, created_at, ...rest }) => rest);
-                    await _supabase.from('laporan_lalamove').insert(cleaned);
-                    alert("Data berhasil diimpor!");
-                    handleMonthChange();
+                for (const key in importedData) {
+                    await _supabase.from('laporan_lalamove').upsert({ storage_key: key, data: JSON.parse(importedData[key]) }, { onConflict: 'storage_key' });
                 }
-            } catch (error) {
-                alert("File JSON tidak valid!");
-            }
+                alert("Data berhasil dipulihkan ke Supabase!");
+                handleMonthChange();
+            } catch (err) { alert("Format file JSON tidak valid!"); }
         };
         reader.readAsText(file);
-        event.target.value = "";
     }
 
-    window.onload = function() {
+    window.onload = async function() {
         const now = new Date();
         document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        handleMonthChange();
+        await handleMonthChange();
     };
 </script>
 </body>

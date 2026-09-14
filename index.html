@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Lalamove Dinamis - Supabase</title>
+    <title>Laporan Lalamove Dinamis</title>
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client CDN -->
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -158,7 +158,11 @@
             box-shadow: 0 2px 4px -1px rgba(243, 112, 33, 0.2);
             transition: all 0.2s ease;
         }
-        .btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
 
         .btn-delete {
             background-color: #fee2e2;
@@ -167,7 +171,10 @@
             font-size: 11px;
             box-shadow: none;
         }
-        .btn-delete:hover { background-color: var(--danger); color: white; }
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
+        }
 
         .table-responsive {
             overflow-x: auto;
@@ -182,18 +189,26 @@
             text-align: left;
         }
 
-        th, td { padding: 6px 8px; font-size: 14px; }
+        th, td {
+            padding: 2px 5px;
+            font-size: 14px;
+        }
+
         th {
             background-color: #f8fafc;
             color: var(--text-muted);
             font-weight: 600;
             border-bottom: 2px solid var(--border-color);
             text-transform: uppercase;
-            font-size: 13px;
+            font-size: 14px;
         }
-        td { border-bottom: 1px solid var(--border-color); color: var(--text-main); }
-        tbody tr:hover { background-color: #fcfcfc; }
 
+        td {
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tbody tr:hover { background-color: #fcfcfc; }
         td.text-right, th.text-right { text-align: right; }
         td.text-center, th.text-center { text-align: center; }
         td.date-cell { cursor: pointer; user-select: none; }
@@ -211,26 +226,48 @@
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
-            justify-content: center; align-items: center;
-            z-index: 1000; backdrop-filter: blur(2px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
         }
+
         .modal-content {
-            background: #ffffff; padding: 16px; border-radius: 12px;
-            width: 280px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            display: flex; flex-direction: column; gap: 8px;
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 12px;
+            width: 280px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
+
         .modal-title {
-            font-size: 13px; font-weight: 600; color: var(--text-muted);
-            margin-bottom: 4px; text-align: center; text-transform: uppercase;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-align: center;
+            text-transform: uppercase;
         }
+
         .modal-option {
-            background: #f8fafc; border: 1px solid var(--border-color);
-            padding: 10px 14px; font-size: 14px; font-weight: 500;
-            border-radius: 8px; cursor: pointer; text-align: left; color: var(--text-main);
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text-main);
         }
-        .modal-option:hover { background: #f1f5f9; }
+        .modal-option:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .modal-option.opt-argo-kotor { color: #2563eb; font-weight: 600; }
         .modal-option.opt-potongan-aplikasi { color: #ef4444; font-weight: 600; }
         .modal-option.opt-bbm { color: #f97316; font-weight: 600; }
@@ -241,9 +278,9 @@
     <div class="container">
         <div class="top-nav">
             <div class="nav-group">
-                <button class="btn-nav btn-json" onclick="exportDataJSON()">Download JSON</button>
+                <button class="btn-nav btn-json" onclick="downloadJSON()">Download JSON</button>
                 <button class="btn-nav btn-json" onclick="document.getElementById('importJsonFile').click()">Upload JSON</button>
-                <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="importDataJSON(event)">
+                <input type="file" id="importJsonFile" style="display: none;" accept=".json" onchange="uploadJSON(event)">
             </div>
             <div class="nav-group">
                 <a href="dashboard.html" class="btn-nav">Buka Laporan Ringkasan</a>
@@ -255,18 +292,18 @@
         <div class="controls-wrapper">
             <div class="filter-bar">
                 <select id="selectBulan" onchange="changePeriod()">
-                    <option value="januari">Januari</option>
-                    <option value="februari">Februari</option>
-                    <option value="maret">Maret</option>
-                    <option value="april">April</option>
-                    <option value="mei">Mei</option>
-                    <option value="juni">Juni</option>
-                    <option value="juli">Juli</option>
-                    <option value="agustus">Agustus</option>
-                    <option value="september">September</option>
-                    <option value="oktober">Oktober</option>
-                    <option value="november">November</option>
-                    <option value="desember">Desember</option>
+                    <option value="Januari">Januari</option>
+                    <option value="Februari">Februari</option>
+                    <option value="Maret">Maret</option>
+                    <option value="April">April</option>
+                    <option value="Mei">Mei</option>
+                    <option value="Juni">Juni</option>
+                    <option value="Juli">Juli</option>
+                    <option value="Agustus">Agustus</option>
+                    <option value="September">September</option>
+                    <option value="Oktober">Oktober</option>
+                    <option value="November">November</option>
+                    <option value="Desember">Desember</option>
                 </select>
                 <input type="number" id="inputTahun" value="2026" style="width: 80px;" onchange="changePeriod()">
             </div>
@@ -294,10 +331,8 @@
         <div id="notification"></div>
     </div>
 
-    <!-- Hidden Date Input -->
     <input type="date" id="hiddenDateInput" style="position: absolute; opacity: 0; pointer-events: none;" onchange="onDatePicked(this)">
 
-    <!-- Custom Modal Transaksi -->
     <div id="transactionModal" class="modal-overlay" onclick="closeModalOutside(event)">
         <div class="modal-content">
             <div class="modal-title">Pilih Jenis Transaksi</div>
@@ -308,10 +343,11 @@
     </div>
 
     <script>
-        // INISIALISASI SUPABASE (Ganti dengan kredensial Anda)
-        const SUPABASE_URL = 'https://rnocczjkimskxnomdvhn.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_36aOxpL_SCcF-DFspJ6IUQ_ngfdAOMs';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://rnocczjkimskxnomdvhn.supabase.co'; // Ganti dengan URL Supabase Anda
+        const SUPABASE_ANON_KEY = 'sb_publishable_36aOxpL_SCcF-DFspJ6IUQ_ngfdAOMs'; // Ganti dengan Anon Key Supabase Anda
+        const { createClient } = supabase;
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const table = document.getElementById('laporanTable').getElementsByTagName('tbody')[0];
         const notification = document.getElementById('notification');
@@ -324,27 +360,35 @@
         let activeDateCell = null;
         let activeTriggerButton = null;
         let pressTimer = null;
-        let isSaving = false;
 
         function setOtomatisPeriodeSekarang() {
-            const namaBulanKey = [
-                "januari", "februari", "maret", "april", "mei", "juni", 
-                "juli", "agustus", "september", "oktober", "november", "desember"
+            const namaBulan = [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
             ];
             const sekarang = new Date();
-            selectBulan.value = namaBulanKey[sekarang.getMonth()];
+            selectBulan.value = namaBulan[sekarang.getMonth()];
             inputTahun.value = sekarang.getFullYear();
         }
 
+        function getStorageKey() {
+            const bulan = selectBulan.value.toLowerCase();
+            const tahun = inputTahun.value;
+            return `laporan_lalamove_${bulan}_${tahun}`;
+        }
+
         function updateTitle() {
-            const bulanKapital = selectBulan.value.charAt(0).toUpperCase() + selectBulan.value.slice(1);
-            mainTitle.innerText = `Master Data Laporan Lalamove ${bulanKapital} ${inputTahun.value}`;
+            mainTitle.innerText = `Master Data Laporan Lalamove ${selectBulan.value} ${inputTahun.value}`;
         }
 
         function renderTable(rowsData) {
             table.innerHTML = "";
             rowsData.forEach(rowData => {
-                insertRowToDOM(rowData.tanggal || "", rowData.jenis_transaksi || "", rowData.nominal ? "Rp " + Number(rowData.nominal).toLocaleString('id-ID') : "");
+                let nominalVal = rowData[2];
+                if ((!nominalVal || nominalVal === "") && rowData[3] && rowData[3] !== "") {
+                    nominalVal = rowData[3];
+                }
+                insertRowToDOM(rowData[0], rowData[1], nominalVal);
             });
         }
 
@@ -353,7 +397,9 @@
             const currencyInput = row.querySelector('.currency-input');
             
             triggerEl.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm', 'text-placeholder');
-            if (currencyInput) currencyInput.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
+            if (currencyInput) {
+                currencyInput.classList.remove('text-argo-kotor', 'text-potongan-aplikasi', 'text-bbm');
+            }
 
             if (!value) {
                 triggerEl.innerText = "Pilih Jenis Transaksi";
@@ -376,7 +422,7 @@
         function insertRowToDOM(tanggal = "", jenisTransaksi = "", nominal = "") {
             const newRow = table.insertRow();
             newRow.innerHTML = `
-                <td class="date-cell" title="Klik untuk ubah">${tanggal}</td>
+                <td class="date-cell" title="Klik untuk ubah, Tekan lama untuk hapus tanggal">${tanggal}</td>
                 <td><button type="button" class="transaksi-trigger" onclick="openModal(this)"></button></td>
                 <td contenteditable="true" inputmode="numeric" class="text-right currency-input">${nominal}</td>
                 <td class="text-center"><button class="btn btn-delete" onclick="deleteRow(this)">Hapus</button></td>
@@ -384,9 +430,14 @@
 
             const cell = newRow.querySelector('.date-cell');
             cell.addEventListener('click', () => openCalendar(cell));
+            cell.addEventListener('mousedown', () => startLongPress(cell));
+            cell.addEventListener('touchstart', () => startLongPress(cell));
+            cell.addEventListener('mouseup', cancelLongPress);
+            cell.addEventListener('mouseleave', cancelLongPress);
+            cell.addEventListener('touchend', cancelLongPress);
+            cell.addEventListener('touchmove', cancelLongPress);
 
-            const triggerEl = newRow.querySelector('.transaksi-trigger');
-            updateRowColors(triggerEl, jenisTransaksi);
+            updateRowColors(newRow.querySelector('.transaksi-trigger'), jenisTransaksi);
         }
 
         function openModal(triggerBtn) {
@@ -411,43 +462,49 @@
             closeModal();
         }
 
+        function startLongPress(cell) {
+            cancelLongPress();
+            pressTimer = setTimeout(() => {
+                if (cell.innerText.trim() !== "" && confirm("Hapus tanggal ini?")) {
+                    cell.innerText = "";
+                    saveTableData();
+                }
+            }, 600);
+        }
+
+        function cancelLongPress() {
+            if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+        }
+
         function openCalendar(cell) {
             activeDateCell = cell;
-            if (typeof hiddenDateInput.showPicker === 'function') hiddenDateInput.showPicker();
-            else hiddenDateInput.click();
+            typeof hiddenDateInput.showPicker === 'function' ? hiddenDateInput.showPicker() : hiddenDateInput.click();
         }
 
         function onDatePicked(input) {
-            if (!activeDateCell) return;
-            const val = input.value; 
-            if (val) {
-                const parts = val.split('-');
-                const year = parts[0].slice(-2);
-                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-                const formattedDate = `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]} ${year}`;
-                activeDateCell.innerText = formattedDate;
-                saveTableData();
-            }
+            if (!activeDateCell || !input.value) return;
+            const parts = input.value.split('-');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+            activeDateCell.innerText = `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]} ${parts[0].slice(-2)}`;
+            saveTableData();
             input.value = "";
         }
 
         async function loadTableData() {
             updateTitle();
-            const bulan = selectBulan.value.toLowerCase();
-            const tahun = inputTahun.value;
-
+            const storageKey = getStorageKey();
+            
             const { data, error } = await _supabase
                 .from('laporan_lalamove')
-                .select('*')
-                .eq('bulan', bulan)
-                .eq('tahun', tahun)
-                .order('id', { ascending: true });
+                .select('data')
+                .eq('storage_key', storageKey)
+                .single();
 
-            if (error) {
-                console.error('Gagal mengambil data:', error);
-                return;
+            if (data && data.data) {
+                renderTable(data.data);
+            } else {
+                renderTable([]);
             }
-            renderTable(data || []);
         }
 
         function changePeriod() {
@@ -459,9 +516,9 @@
             saveTableData();
         }
 
-        async function deleteRow(button) {
+        function deleteRow(button) {
             button.closest('tr').remove();
-            await saveTableData();
+            saveTableData();
         }
 
         document.getElementById('laporanTable').addEventListener('input', function(e) {
@@ -477,127 +534,66 @@
             saveTableData();
         });
 
-        // Sinkronisasi Simpan ke Supabase
         async function saveTableData() {
-            if (isSaving) return;
-            isSaving = true;
-
-            const bulan = selectBulan.value.toLowerCase();
-            const tahun = inputTahun.value;
-
-            // Hapus data lama bulan ini di server, lalu insert ulang data terupdate
-            await _supabase.from('laporan_lalamove').delete().eq('bulan', bulan).eq('tahun', tahun);
-
-            const rows = table.querySelectorAll('tr');
-            const dataToInsert = [];
-
-            rows.forEach(row => {
-                const tanggal = row.querySelectorAll('td')[0].innerText.trim();
-                const triggerEl = row.querySelector('.transaksi-trigger');
-                const jenis_transaksi = (triggerEl && !triggerEl.classList.contains('text-placeholder')) ? triggerEl.innerText.trim() : "";
-                const nominalText = row.querySelectorAll('td')[2].innerText;
-                const nominal = parseFloat(nominalText.replace(/[^0-9]/g, '')) || 0;
-
-                if (tanggal || jenis_transaksi || nominal > 0) {
-                    dataToInsert.push({ bulan, tahun, tanggal, jenis_transaksi, nominal });
-                }
+            const storageKey = getStorageKey();
+            const rowsData = [];
+            table.querySelectorAll('tr').forEach(row => {
+                rowsData.push([
+                    row.querySelectorAll('td')[0].innerText,
+                    (row.querySelector('.transaksi-trigger') && !row.querySelector('.transaksi-trigger').classList.contains('text-placeholder')) ? row.querySelector('.transaksi-trigger').innerText : "",
+                    row.querySelectorAll('td')[2].innerText
+                ]);
             });
 
-            if (dataToInsert.length > 0) {
-                const { error } = await _supabase.from('laporan_lalamove').insert(dataToInsert);
-                if (error) console.error('Gagal menyimpan ke Supabase:', error);
-            }
+            const { error } = await _supabase
+                .from('laporan_lalamove')
+                .upsert({ storage_key: storageKey, data: rowsData }, { onConflict: 'storage_key' });
 
-            notification.innerText = "Tersimpan ke Supabase...";
-            setTimeout(() => { notification.innerText = ""; }, 1500);
-            isSaving = false;
+            if (!error) {
+                notification.innerText = "Tersimpan ke Supabase...";
+                setTimeout(() => { notification.innerText = ""; }, 1500);
+            } else {
+                notification.innerText = "Gagal menyimpan!";
+                console.error(error);
+            }
         }
 
-        async function exportDataJSON() {
+        async function downloadJSON() {
             const { data, error } = await _supabase.from('laporan_lalamove').select('*');
-            if (error) { alert("Gagal mengambil data export"); return; }
-            
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            if (error) { alert("Gagal mengambil data dari Supabase"); return; }
+
+            const exportData = {};
+            data.forEach(item => { exportData[item.storage_key] = JSON.stringify(item.data); });
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `backup_laporan_lalamove.json`);
+            downloadAnchor.setAttribute("download", `backup_lalamove_${selectBulan.value}_${inputTahun.value}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
-        async function importDataJSON(event) {
+        async function uploadJSON(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
-                    const rawData = JSON.parse(e.target.result);
-                    let cleanedData = [];
-
-                    if (Array.isArray(rawData)) {
-                        // Format standar (hasil export Supabase baru)
-                        cleanedData = rawData.map(({ id, created_at, ...rest }) => rest);
-                    } else if (typeof rawData === 'object' && rawData !== null) {
-                        // Format backup lama (seperti backup_lalamove_September_2026.json)
-                        for (const [key, value] of Object.entries(rawData)) {
-                            if (key.startsWith('laporan_lalamove_')) {
-                                const bulan = key.replace('laporan_lalamove_', '');
-                                const tahun = inputTahun.value;
-                                
-                                let rows = [];
-                                try {
-                                    rows = typeof value === 'string' ? JSON.parse(value) : value;
-                                } catch (err) {
-                                    console.error(`Gagal parsing string untuk ${key}`, err);
-                                    continue;
-                                }
-
-                                if (Array.isArray(rows)) {
-                                    let lastValidDate = "";
-                                    rows.forEach(row => {
-                                        const tanggalCol = row[0] ? row[0].trim() : "";
-                                        if (tanggalCol) lastValidDate = tanggalCol;
-                                        
-                                        const jenis_transaksi = row[1] ? row[1].trim() : "";
-                                        
-                                        let nominalStr = "";
-                                        if (row[2] && row[2].includes("Rp")) {
-                                            nominalStr = row[2];
-                                        } else if (row[3] && row[3].includes("Rp")) {
-                                            nominalStr = row[3];
-                                        } else if (row[2]) {
-                                            nominalStr = row[2];
-                                        }
-
-                                        const nominal = parseFloat(nominalStr.replace(/[^0-9]/g, '')) || 0;
-
-                                        if (lastValidDate || jenis_transaksi || nominal > 0) {
-                                            cleanedData.push({
-                                                bulan: bulan.toLowerCase(),
-                                                tahun: String(tahun),
-                                                tanggal: lastValidDate,
-                                                jenis_transaksi: jenis_transaksi,
-                                                nominal: nominal
-                                            });
-                                        }
-                                    });
-                                }
-                            }
+                    const importedData = JSON.parse(e.target.result);
+                    for (const key in importedData) {
+                        if (importedData.hasOwnProperty(key)) {
+                            await _supabase.from('laporan_lalamove').upsert({
+                                storage_key: key,
+                                data: JSON.parse(importedData[key])
+                            }, { onConflict: 'storage_key' });
                         }
                     }
-
-                    if (cleanedData.length > 0) {
-                        const { error } = await _supabase.from('laporan_lalamove').insert(cleanedData);
-                        if (error) throw error;
-                        alert("Data JSON berhasil diimpor ke Supabase!");
-                        loadTableData();
-                    } else {
-                        alert("Tidak ada data transaksi valid yang ditemukan dalam file JSON!");
-                    }
+                    alert("Data berhasil di-upload ke Supabase!");
+                    loadTableData();
                 } catch (error) {
-                    alert("Gagal membaca atau memproses file JSON!");
+                    alert("Format file JSON tidak valid!");
                     console.error(error);
                 }
             };
@@ -605,9 +601,9 @@
             event.target.value = "";
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             setOtomatisPeriodeSekarang();
-            loadTableData();
+            await loadTableData();
         };
     </script>
 </body>
